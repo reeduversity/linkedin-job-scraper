@@ -17,4 +17,5 @@ data/excel/
 .coverage
 .dist/
 build/
-
+tests/
+demo/

@@ -1,92 +1,100 @@
-# LinkedIn Job Collection System
+# 🚀 LinkedIn Job Collection & Analysis System
 
-This workspace contains the initial Stage 1 scaffold for a production-oriented job collection pipeline that uses Python, PostgreSQL, and the Apify LinkedIn Jobs Scraper Actor without scraping LinkedIn directly.
+![LinkedIn Job Scraper](https://img.shields.io/badge/Status-Active-brightgreen.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-Frontend-black.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue.svg)
+![Apify](https://img.shields.io/badge/Apify-Scraping-yellow.svg)
 
-## Stage 1 Deliverables
-- Workspace scan completed
-- Python verified: Python 3.12.10
-- PostgreSQL CLI verification was not possible in this environment because `psql`, `pg_isready`, and `postgres` were not available on PATH
-- Initial project structure created
-- Python dependencies declared in requirements.txt
+A professional, enterprise-grade automated pipeline for collecting, storing, and analyzing LinkedIn job postings without direct scraping limits. This system integrates Python for the backend processing, PostgreSQL for robust data storage, Apify's actor ecosystem for scraping, and a sleek modern Next.js dashboard.
 
-## Proposed Structure
-- app/ for application code
-- sql/ for database schema files
-- scripts/ for operational helpers
-- .env.example for environment placeholders
+---
 
-## Next Step
-Review this scaffold and approve Stage 2 when ready.
+## 🏗️ Architecture & Features
 
-## Stage 2: Python environment & dependency setup
+- **Automated Scraping**: Uses Apify's actor system to securely fetch job postings.
+- **Robust Database**: PostgreSQL backend to store, query, and analyze jobs historically.
+- **Modern Dashboard**: A Next.js frontend (`/frontend`) for visualizing data, monitoring health, and scheduling tasks.
+- **Dynamic Scheduling**: Configurable intervals for autonomous job collection.
+- **Clean Exporting**: Built-in support to export scraped data to CSV and Excel.
 
-1. Create and activate a virtual environment (Windows PowerShell):
+## 📂 Project Structure
+
+```
+├── app/               # Python application logic (Backend)
+├── frontend/          # Next.js web application (Frontend)
+├── sql/               # Database schemas and migrations
+├── scripts/           # Operational & deployment scripts
+├── data/              # Exported CSVs and Excel files
+├── logs/              # Application runtime logs
+└── requirements.txt   # Python dependencies
+```
+
+> **Note**: Test and demo files have been intentionally excluded from this repository to ensure a clean, production-ready clone experience.
+
+---
+
+## ⚡ Getting Started
+
+Follow these instructions to get the system running perfectly on your local machine.
+
+### 1. Prerequisites
+- Python 3.12+
+- Node.js 18+ (for frontend)
+- PostgreSQL Server installed and running
+
+### 2. Environment Setup
+
+Copy the example environment configuration and fill in your credentials.
+**Do not commit your `.env` file to version control.**
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure your settings:
+- `APIFY_TOKEN` & `APIFY_ACTOR_ID`
+- `POSTGRES_*` (Database credentials)
+- `SCHEDULE_INTERVAL` & `MAX_RESULTS`
+
+### 3. Backend Setup
+
+Initialize the virtual environment and install dependencies:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-2. Upgrade pip and install dependencies:
-
+Verify the environment configuration:
 ```powershell
-.\.venv\Scripts\python -m pip install --upgrade pip setuptools wheel
-.\.venv\Scripts\python -m pip install -r requirements.txt
+python -m app.config_validator
 ```
 
-3. Verify dependencies:
+### 4. Frontend Setup
 
-```powershell
-.\.venv\Scripts\python scripts/check_dependencies.py
+Open a new terminal window, navigate to the frontend directory, and start the Next.js app:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-The `check_dependencies.py` script imports each required package, prints the installed version, and exits with code 0 when all packages are present.
+Your modern dashboard will be live at `http://localhost:3000`.
 
-## Stage 3: Environment configuration & validation
+---
 
-1. Copy `.env.example` to `.env` and populate secrets:
+## 🛡️ Best Practices & Security
 
-```powershell
-copy .env.example .env
-```
+- **Secrets Management**: All sensitive data (Tokens, DB Passwords) is loaded dynamically via the `.env` file. Never hardcode credentials.
+- **Clean Architecture**: The codebase is strictly divided into backend services and frontend presentation for maximum scalability.
+- **Production Ready**: Demo, cache, and test folders are strictly `.gitignore`'d to keep the repository lightweight and professional.
 
-2. Edit `.env` and fill in required values:
+## 🤝 Contribution Guidelines
+When cloning this repository for team development, please ensure you branch out from `master`, run the linter configurations defined in the respective directories, and test locally before issuing a Pull Request.
 
-- `APIFY_TOKEN`
-- `APIFY_ACTOR_ID`
-- `POSTGRES_HOST`
-- `POSTGRES_PORT`
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `CSV_EXPORT_PATH`
-- `EXCEL_EXPORT_PATH`
-- `LOG_LEVEL`
-- `LOG_PATH`
-- `MAX_RESULTS`
-- `SCHEDULE_INTERVAL`
-
-3. Validate configuration and runtime connectivity:
-
-```powershell
-.\.venv\Scripts\python -m app.config_validator
-```
-
-This validation module checks environment values, verifies Apify authentication, verifies PostgreSQL connectivity, and creates required directories.
-
-### Configuration details
-
-- `APIFY_TOKEN`: Apify API token used for authentication
-- `APIFY_ACTOR_ID`: Actor ID for the Apify LinkedIn Jobs Scraper Actor
-- `POSTGRES_HOST`: PostgreSQL host name or IP
-- `POSTGRES_PORT`: PostgreSQL port number
-- `POSTGRES_DB`: PostgreSQL target database name
-- `POSTGRES_USER`: PostgreSQL username
-- `POSTGRES_PASSWORD`: PostgreSQL password
-- `CSV_EXPORT_PATH`: path to generate CSV exports
-- `EXCEL_EXPORT_PATH`: path to generate Excel exports
-- `LOG_LEVEL`: logging threshold (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-- `LOG_PATH`: path to the application log file
-- `MAX_RESULTS`: maximum number of jobs to fetch
-- `SCHEDULE_INTERVAL`: interval for scheduled job collection
-
+---
+*Built with passion for data-driven decisions.*
