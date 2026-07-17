@@ -1,0 +1,120 @@
+'use client';
+
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, ExternalLink, CalendarDays, MapPin, Building2, Briefcase, Globe, Blend } from 'lucide-react';
+import type { LinkedInJob } from '@/lib/types/api';
+import { formatDistanceToNow } from 'date-fns';
+
+interface JobDetailsDialogProps {
+  job: LinkedInJob | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogProps) {
+  if (!job) return null;
+
+  const formatDate = (val?: string | null) => {
+    if (!val) return '—';
+    try {
+      return formatDistanceToNow(new Date(val), { addSuffix: true });
+    } catch {
+      return '—';
+    }
+  };
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-0 shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/95 backdrop-blur px-6 py-4">
+            <div>
+              <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
+                {job.job_title ?? 'Job Details'}
+              </Dialog.Title>
+              <Dialog.Description className="text-sm text-muted-foreground mt-1.5">
+                {job.company_name ?? 'Unknown Company'}
+              </Dialog.Description>
+            </div>
+            <Dialog.Close asChild>
+              <button className="focus-ring rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </Dialog.Close>
+          </div>
+          
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+               <InfoItem icon={MapPin} label="Location" value={job.location} />
+               <InfoItem icon={Globe} label="Country" value={job.country} />
+               <InfoItem icon={Blend} label="Workplace" value={job.workplace_type} />
+               <InfoItem icon={Briefcase} label="Type" value={job.employment_type} />
+               <InfoItem icon={Building2} label="Level" value={job.experience_level} />
+               <InfoItem icon={CalendarDays} label="Posted" value={formatDate(job.posted_date)} />
+            </div>
+            
+            {(job.salary || job.easy_apply) && (
+              <div className="flex flex-wrap gap-2">
+                {job.salary && (
+                  <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-2.5 py-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    {job.currency} {job.salary}
+                  </span>
+                )}
+                {job.easy_apply && (
+                  <span className="inline-flex items-center rounded-md bg-blue-500/10 px-2.5 py-1 text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Easy Apply
+                  </span>
+                )}
+              </div>
+            )}
+
+            {job.description && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Description</h3>
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap rounded-lg bg-muted/30 p-4 leading-relaxed">
+                  {job.description}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3 pt-2">
+               {job.linkedin_job_url && (
+                 <a
+                   href={job.linkedin_job_url}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="focus-ring inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                 >
+                   View on LinkedIn <ExternalLink className="h-4 w-4" />
+                 </a>
+               )}
+               {job.application_url && (
+                 <a
+                   href={job.application_url}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="focus-ring inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                 >
+                   Company Website <ExternalLink className="h-4 w-4" />
+                 </a>
+               )}
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) {
+  return (
+    <div className="space-y-1">
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </span>
+      <p className="text-sm font-medium">{value ?? '—'}</p>
+    </div>
+  );
+}
