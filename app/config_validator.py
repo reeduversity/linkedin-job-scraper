@@ -16,14 +16,10 @@ class ConfigurationError(RuntimeError):
     """Raised when configuration validation fails."""
 
 
-REQUIRED_ENV_VARS = [
+# When DATABASE_URL is provided (Neon cloud), individual POSTGRES_* vars are optional.
+ALWAYS_REQUIRED_ENV_VARS = [
     "APIFY_TOKEN",
     "APIFY_ACTOR_ID",
-    "POSTGRES_HOST",
-    "POSTGRES_PORT",
-    "POSTGRES_DB",
-    "POSTGRES_USER",
-    "POSTGRES_PASSWORD",
     "CSV_EXPORT_PATH",
     "EXCEL_EXPORT_PATH",
     "LOG_LEVEL",
@@ -31,6 +27,17 @@ REQUIRED_ENV_VARS = [
     "MAX_RESULTS",
     "SCHEDULE_INTERVAL",
 ]
+
+POSTGRES_INDIVIDUAL_VARS = [
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+    "POSTGRES_DB",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+]
+
+# Keep for backward compat
+REQUIRED_ENV_VARS = ALWAYS_REQUIRED_ENV_VARS + POSTGRES_INDIVIDUAL_VARS
 
 
 @dataclass(frozen=True)
@@ -79,11 +86,33 @@ def validate_int(name: str, value: str, minimum: int = 1) -> int:
 def validate_required_env() -> dict[str, str]:
     values: dict[str, str] = {}
     missing = []
-    for key in REQUIRED_ENV_VARS:
+
+    # Always required vars
+    for key in ALWAYS_REQUIRED_ENV_VARS:
         value = os.getenv(key, "").strip()
         if not value:
             missing.append(key)
         values[key] = value
+
+    # If DATABASE_URL is set (Neon), individual POSTGRES_* vars are optional
+    database_url = os.getenv("DATABASE_URL", "").strip()
+    if database_url:
+        values["DATABASE_URL"] = database_url
+        # Populate POSTGRES_* from URL for backward compat with build_config
+        from urllib.parse import urlparse
+        parsed = urlparse(database_url)
+        values["POSTGRES_HOST"] = parsed.hostname or "localhost"
+        values["POSTGRES_PORT"] = str(parsed.port or 5432)
+        values["POSTGRES_DB"] = parsed.path.lstrip("/")
+        values["POSTGRES_USER"] = parsed.username or ""
+        values["POSTGRES_PASSWORD"] = parsed.password or ""
+    else:
+        for key in POSTGRES_INDIVIDUAL_VARS:
+            value = os.getenv(key, "").strip()
+            if not value:
+                missing.append(key)
+            values[key] = value
+
     if missing:
         raise EnvironmentError(f"Missing required environment variables: {', '.join(missing)}")
     return values
@@ -122,6 +151,19 @@ def create_database_if_missing(host: str, port: int, dbname: str, user: str, pas
 
 
 def verify_postgres_connection(host: str, port: int, dbname: str, user: str, password: str) -> None:
+    """Connect to PostgreSQL and verify with SELECT 1. Supports Neon via DATABASE_URL."""
+    database_url = os.getenv("DATABASE_URL", "").strip()
+    if database_url:
+        # Use DATABASE_URL directly (includes SSL params for Neon)
+        from app.database import get_connection
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                result = cursor.fetchone()
+                if result != (1,):
+                    raise ConnectionError("Unexpected PostgreSQL test query result")
+        return
+
     connection_string = f"dbname={dbname} user={user} password={password} host={host} port={port}"
     with psycopg.connect(connection_string) as conn:
         with conn.cursor() as cursor:

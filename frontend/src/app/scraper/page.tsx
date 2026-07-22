@@ -363,7 +363,7 @@ export default function ScraperPage() {
               <div>
                 <h3 className="font-medium text-muted-foreground">Ready to Scrape</h3>
                 <p className="text-sm text-muted-foreground/70 mt-1 max-w-[250px]">
-                  Configure your search parameters and click "Run Scraper" to start fetching data.
+                  Configure your search parameters and click &quot;Run Scraper&quot; to start fetching data.
                 </p>
               </div>
             </div>

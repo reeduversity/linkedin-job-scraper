@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from typing import Iterator
+from urllib.parse import urlparse
 
 import psycopg
 from psycopg.rows import dict_row
@@ -13,17 +14,52 @@ class DatabaseError(RuntimeError):
     """Raised when database operations fail."""
 
 
+def _build_connect_kwargs() -> dict:
+    """
+    Build psycopg connection kwargs.
+    If DATABASE_URL is set (e.g. Neon cloud URL), parse it directly.
+    Otherwise fall back to individual POSTGRES_* env vars.
+    Neon requires sslmode=require which is included in the URL automatically.
+    """
+    import os
+    database_url = os.getenv("DATABASE_URL", "").strip()
+
+    if database_url:
+        # Parse the URL and pass params explicitly so psycopg handles SSL correctly
+        parsed = urlparse(database_url)
+        kwargs: dict = {
+            "host": parsed.hostname,
+            "port": parsed.port or 5432,
+            "dbname": parsed.path.lstrip("/"),
+            "user": parsed.username,
+            "password": parsed.password,
+        }
+        # Pass sslmode from query string if present (Neon uses ?sslmode=require)
+        if parsed.query and "sslmode=require" in parsed.query:
+            kwargs["sslmode"] = "require"
+        elif parsed.query and "sslmode=disable" in parsed.query:
+            kwargs["sslmode"] = "disable"
+        else:
+            # Neon always needs SSL — default to require when using DATABASE_URL
+            kwargs["sslmode"] = "require"
+        return kwargs
+
+    # Local / individual env vars — no SSL by default
+    return {
+        "host": settings.postgres_host,
+        "port": settings.postgres_port,
+        "dbname": settings.postgres_db,
+        "user": settings.postgres_user,
+        "password": settings.postgres_password,
+    }
+
+
 @contextmanager
 def get_connection() -> Iterator[psycopg.Connection]:
     conn: psycopg.Connection | None = None
     try:
-        conn = psycopg.connect(
-            host=settings.postgres_host,
-            port=settings.postgres_port,
-            dbname=settings.postgres_db,
-            user=settings.postgres_user,
-            password=settings.postgres_password,
-        )
+        kwargs = _build_connect_kwargs()
+        conn = psycopg.connect(**kwargs)
         yield conn
     except psycopg.Error as exc:
         raise DatabaseError(f"Failed to connect to PostgreSQL: {exc}") from exc
