@@ -144,6 +144,44 @@ class JobScraper:
         if not linkedin_url or not is_valid_url(linkedin_url):
             return None
 
+        # Extract and normalize location
+        loc = normalize_optional_string(item.get("location") or item.get("jobLocation"))
+        
+        # Parse country from location if missing
+        country_val = normalize_optional_string(item.get("country") or item.get("countryCode"))
+        if not country_val and loc:
+            parts = [p.strip() for p in loc.split(",") if p.strip()]
+            if parts:
+                last_part = parts[-1]
+                # US states list (2-letter abbreviations)
+                us_states = {
+                    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY",
+                    "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND",
+                    "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+                }
+                if last_part.upper() in us_states or last_part.lower() == "usa":
+                    country_val = "United States"
+                else:
+                    country_val = last_part
+
+        # Parse workplace_type from location
+        wp_type = normalize_optional_string(item.get("workplaceType") or item.get("workplace_type"))
+        if not wp_type and loc:
+            loc_lower = loc.lower()
+            if "remote" in loc_lower:
+                wp_type = "REMOTE"
+            elif "hybrid" in loc_lower:
+                wp_type = "HYBRID"
+            else:
+                wp_type = "ONSITE"
+        elif not wp_type:
+            wp_type = "ONSITE"
+
+        # Parse easy_apply from applyType
+        easy_app = self._normalize_bool(item.get("easyApply") or item.get("easy_apply"))
+        if easy_app is None:
+            easy_app = (item.get("applyType") == "EASY_APPLY")
+
         raw_json = dict(item)
         return LinkedInJob(
             job_title=normalize_optional_string(item.get("title") or item.get("jobTitle") or item.get("job_title")),
@@ -151,9 +189,9 @@ class JobScraper:
             company_url=normalize_optional_string(item.get("companyUrl") or item.get("company_url")),
             linkedin_job_url=linkedin_url,
             job_id=normalize_optional_string(item.get("jobId") or item.get("job_id") or item.get("id")),
-            location=normalize_optional_string(item.get("location") or item.get("jobLocation")),
-            country=normalize_optional_string(item.get("country") or item.get("countryCode")),
-            workplace_type=normalize_optional_string(item.get("workplaceType") or item.get("workplace_type")),
+            location=loc,
+            country=country_val,
+            workplace_type=wp_type,
             employment_type=normalize_optional_string(item.get("employmentType") or item.get("employment_type")),
             experience_level=normalize_optional_string(item.get("experienceLevel") or item.get("experience_level")),
             salary=normalize_salary(item.get("salary") or item.get("salaryRange")),
@@ -168,7 +206,7 @@ class JobScraper:
             company_logo=normalize_optional_string(item.get("companyLogo") or item.get("company_logo")),
             company_size=normalize_optional_string(item.get("companySize") or item.get("company_size")),
             application_url=normalize_optional_string(item.get("applicationUrl") or item.get("application_url")),
-            easy_apply=self._normalize_bool(item.get("easyApply") or item.get("easy_apply")),
+            easy_apply=easy_app,
             posted_date=normalize_date(item.get("postedDate") or item.get("posted_date") or item.get("postedAt")),
             scraped_timestamp=datetime.now(timezone.utc),
             raw_json=raw_json,
