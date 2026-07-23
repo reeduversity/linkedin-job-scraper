@@ -50,6 +50,7 @@ export interface LinkedInJob {
   post_author_name?: string;
   post_author_profile_url?: string;
   application_method?: string;
+  application_methods?: string[];
   application_email?: string;
   application_platform?: string;
   raw_json?: Record<string, unknown>;
