@@ -203,6 +203,7 @@ export default function JobsPage() {
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Company</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Location</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Type</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apply</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Posted</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">Action</th>
                     </tr>
@@ -226,6 +227,17 @@ export default function JobsPage() {
                         </td>
                         <td className="px-4 py-3">
                           {job.workplace_type ? <WorkplaceBadge type={job.workplace_type} /> : (job.source_type === 'LINKEDIN_HIRING_POST' ? <span className="text-xs text-muted-foreground">From Post</span> : '—')}
+                        </td>
+                        <td className="px-4 py-3 text-xs max-w-[150px] truncate">
+                          {job.application_email ? (
+                            <span className="text-blue-600 dark:text-blue-400">{job.application_email}</span>
+                          ) : job.application_methods?.includes('COMMENT') ? (
+                            <span className="text-emerald-600 dark:text-emerald-400">Comment on Post</span>
+                          ) : job.application_methods?.includes('DIRECT_MESSAGE') ? (
+                            <span className="text-purple-600 dark:text-purple-400">DM Author</span>
+                          ) : job.application_url ? (
+                            <span className="text-info">External Link</span>
+                          ) : '—'}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
                           {job.posted_date ? formatDistanceToNow(new Date(job.posted_date), { addSuffix: true }) : (job.source_type === 'LINKEDIN_HIRING_POST' ? 'Recent' : '—')}
