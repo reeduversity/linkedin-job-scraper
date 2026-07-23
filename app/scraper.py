@@ -253,17 +253,15 @@ class PostScraper:
         self.last_run_duplicate_count = 0
         self.last_run_unique_count = 0
 
-        # Build generic search query from request
+        # Build generic search query from request.
+        # For posts, keep the query broad to catch more results, filtering happens after fetching.
         query_parts = []
         if request:
             if request.keyword: query_parts.append(request.keyword)
-            if request.location: query_parts.append(request.location)
             if request.company: query_parts.append(request.company)
-            
-            # Map workplace type to string keyword to help discover posts
-            if request.remote: query_parts.append("remote")
-            elif request.hybrid: query_parts.append("hybrid")
-            elif request.onsite: query_parts.append("onsite")
+            # We explicitly do NOT append location, remote, hybrid, etc. to the query string 
+            # because human-written posts might not contain these exact words, 
+            # and it will cause LinkedIn to return 0 results.
             
         # Always append a hiring keyword to narrow down LinkedIn posts to actual job opportunities
         query_parts.append("hiring")
@@ -310,7 +308,7 @@ class PostScraper:
                 # Apply workplace type if requested (only if explicitly parsed)
                 if request and (request.remote or request.hybrid or request.onsite):
                     has_match = False
-                    if request.remote and "remote" in post_text_lower: has_match = True
+                    if request.remote and ("remote" in post_text_lower or "work from home" in post_text_lower or "wfh" in post_text_lower): has_match = True
                     if request.hybrid and "hybrid" in post_text_lower: has_match = True
                     if request.onsite and ("onsite" in post_text_lower or "on-site" in post_text_lower or "office" in post_text_lower): has_match = True
                     
