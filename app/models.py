@@ -25,26 +25,56 @@ class JobSearchRequest(BaseModel):
         # Apify actor expects `input.remote` to be an ARRAY of workplace type enums.
         # Our public API still uses boolean flags, so convert them to the actor format.
         # Apify actor expects `input.remote` as an ARRAY of enum codes as strings: "1", "2", "3"
-        # Mapping contract (per verified error message and your instruction):
-        #   remote=true  -> ["1"]
-        #   hybrid=true  -> ["2"]
-        #   onsite=true  -> ["3"]
+        # Mapping contract (verified):
+        #   onsite=true  -> ["1"]
+        #   remote=true  -> ["2"]
+        #   hybrid=true  -> ["3"]
         workplace_types: list[str] = []
         if self.remote:
-            workplace_types.append("1")
-        if self.hybrid:
             workplace_types.append("2")
-        if self.onsite:
+        if self.hybrid:
             workplace_types.append("3")
+        if self.onsite:
+            workplace_types.append("1")
+
+        # Map experience_level to Apify's expected enum codes
+        experience_map = {
+            "Internship": "1",
+            "Entry level": "2",
+            "Associate": "3",
+            "Mid-Senior level": "4",
+            "Director": "5",
+            "Executive": "6"
+        }
+        exp_levels = []
+        if self.experience_level:
+            mapped = experience_map.get(self.experience_level)
+            if mapped:
+                exp_levels.append(mapped)
+
+        # Combine location and country for the actor, as it usually only takes a single location string.
+        combined_location = self.location or ""
+        if self.country:
+            combined_location = f"{combined_location}, {self.country}" if combined_location else self.country
+
+        # Map date_posted to Apify's expected enum codes
+        date_map = {
+            "past-24h": "r86400",
+            "past-week": "r604800",
+            "past-month": "r2592000",
+        }
+        mapped_date = date_map.get(self.date_posted) if self.date_posted else None
+
+        # Apify expects employmentType to be an array of strings
+        emp_types = [self.employment_type] if self.employment_type else None
 
         payload = {
             "searchKeywords": self.keyword,
-            "location": self.location,
-            "country": self.country,
+            "location": combined_location or None,
             "remote": workplace_types or None,  # actor schema: array
-            "employmentType": self.employment_type,
-            "experienceLevel": [self.experience_level] if self.experience_level else None,
-            "datePosted": self.date_posted,
+            "employmentType": emp_types,
+            "experienceLevel": exp_levels or None,
+            "datePosted": mapped_date,
             "company": self.company,
             "maxResults": self.max_results,
         }
@@ -59,6 +89,18 @@ class LinkedInJob(BaseModel):
     company_url: str | None = None
     linkedin_job_url: str = Field(...)
     job_id: str | None = None
+    
+    # HIRING_POST specific fields
+    source_type: str = "JOB_LISTING"
+    post_url: str | None = None
+    post_text: str | None = None
+    post_author_name: str | None = None
+    post_author_profile_url: str | None = None
+    post_author_role: str | None = None
+    application_method: str | None = None
+    application_methods: list[str] | None = None
+    application_email: str | None = None
+    application_platform: str | None = None
     location: str | None = None
     country: str | None = None
     workplace_type: str | None = None
@@ -79,9 +121,10 @@ class LinkedInJob(BaseModel):
     easy_apply: bool | None = None
     posted_date: datetime | None = None
     scraped_timestamp: datetime | None = None
+    apify_run_id: str | None = None
     raw_json: dict[str, Any] = Field(default_factory=dict)
 
-    @field_validator("job_title", "company_name", "location", "country", "workplace_type", "employment_type", "experience_level", "salary", "currency", "description", "job_summary", "industry", "benefits", "recruiter", "recruiter_url", "company_logo", "company_size", "application_url", mode="before")
+    @field_validator("job_title", "company_name", "location", "country", "workplace_type", "employment_type", "experience_level", "salary", "currency", "description", "job_summary", "industry", "benefits", "recruiter", "recruiter_url", "company_logo", "company_size", "application_url", "apify_run_id", "source_type", "post_text", "post_author_name", "post_author_role", "application_method", "application_email", "application_platform", mode="before")
     @classmethod
     def normalize_optional_string(cls, value: Any) -> str | None:
         if value is None:
@@ -91,7 +134,7 @@ class LinkedInJob(BaseModel):
             return cleaned or None
         return str(value)
 
-    @field_validator("linkedin_job_url", "company_url", "application_url", "recruiter_url", mode="before")
+    @field_validator("linkedin_job_url", "company_url", "application_url", "recruiter_url", "post_url", "post_author_profile_url", mode="before")
     @classmethod
     def validate_url(cls, value: Any) -> str | None:
         if value is None:
@@ -103,16 +146,16 @@ class LinkedInJob(BaseModel):
             return cleaned
         return str(value)
 
-    @field_validator("skills", mode="before")
+    @field_validator("skills", "application_methods", mode="before")
     @classmethod
     def normalize_skills(cls, value: Any) -> list[str] | None:
         if value is None:
             return None
         if isinstance(value, str):
             items = [item.strip() for item in value.split(",") if item.strip()]
-            return list(dict.fromkeys(items))
+            return list(dict.fromkeys(items)) or None
         if isinstance(value, list):
-            return list(dict.fromkeys(str(item).strip() for item in value if str(item).strip()))
+            return list(dict.fromkeys(str(item).strip() for item in value if str(item).strip())) or None
         return None
 
     @field_validator("easy_apply", mode="before")

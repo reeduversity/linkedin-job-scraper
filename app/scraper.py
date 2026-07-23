@@ -18,6 +18,7 @@ from app.apify_client import (
 )
 from app.duplicate_detector import remove_duplicates
 from app.models import JobSearchRequest, LinkedInJob
+from app.post_parser import parse_post
 from app.utils import is_valid_url, normalize_date, normalize_optional_string, normalize_salary
 from app.validation import validate_jobs
 
@@ -107,11 +108,11 @@ class JobScraper:
         search_request = self._build_request(request, filters)
         input_data = search_request.to_actor_input()
 
-        raw_items = self.client.run_actor(input_data, timeout=120)
+        raw_items, run_id = self.client.run_actor(input_data, timeout=300)
 
         jobs: list[LinkedInJob] = []
         for item in raw_items:
-            job = self._normalize_item(item)
+            job = self._normalize_item(item, run_id)
             if job is not None:
                 jobs.append(job)
 
@@ -136,7 +137,7 @@ class JobScraper:
             return JobSearchRequest(**filters)
         return JobSearchRequest()
 
-    def _normalize_item(self, item: dict[str, Any]) -> LinkedInJob | None:
+    def _normalize_item(self, item: dict[str, Any], run_id: str | None = None) -> LinkedInJob | None:
         if not isinstance(item, dict):
             return None
 
@@ -209,6 +210,7 @@ class JobScraper:
             easy_apply=easy_app,
             posted_date=normalize_date(item.get("postedDate") or item.get("posted_date") or item.get("postedAt")),
             scraped_timestamp=datetime.now(timezone.utc),
+            apify_run_id=run_id,
             raw_json=raw_json,
         )
 
@@ -234,3 +236,94 @@ class JobScraper:
             if lowered in {"false", "0", "no"}:
                 return False
         return None
+
+class PostScraper:
+    """Scraper that calls the Apify LinkedIn Post Actor and extracts HIRING_POSTs."""
+
+    def __init__(self, client: ApifyClient | None = None) -> None:
+        self.client = client or ApifyClient()
+        self.last_run_raw_count: int = 0
+        self.last_run_validated_count: int = 0
+        self.last_run_duplicate_count: int = 0
+        self.last_run_unique_count: int = 0
+
+    def fetch_posts(self, request: JobSearchRequest | None = None, **filters: Any) -> list[LinkedInJob]:
+        self.last_run_raw_count = 0
+        self.last_run_validated_count = 0
+        self.last_run_duplicate_count = 0
+        self.last_run_unique_count = 0
+
+        # Build generic search query from request
+        query_parts = []
+        if request:
+            if request.keyword: query_parts.append(request.keyword)
+            if request.location: query_parts.append(request.location)
+        # Always append a hiring keyword to narrow down LinkedIn posts to actual job opportunities
+        query_parts.append("hiring")
+        query = " ".join(query_parts)
+        
+        input_data = {"searchTerms": query, "maxResults": request.max_results if request else 10}
+
+        raw_items, run_id = self.client.run_actor(input_data, timeout=300)
+
+        jobs: list[LinkedInJob] = []
+        for item in raw_items:
+            job = self._normalize_post_item(item, run_id)
+            if job is not None:
+                jobs.append(job)
+
+        # Duplicate detection and validation
+        validated_jobs = validate_jobs(jobs)
+        unique_jobs = remove_duplicates(validated_jobs)
+
+        self.last_run_raw_count = len(raw_items)
+        self.last_run_validated_count = len(validated_jobs)
+        self.last_run_duplicate_count = len(validated_jobs) - len(unique_jobs)
+        self.last_run_unique_count = len(unique_jobs)
+
+        logger.info(f"Post Scrape metrics: total={len(validated_jobs)} unique={len(unique_jobs)}")
+        return unique_jobs
+
+    def _normalize_post_item(self, item: dict[str, Any], run_id: str | None = None) -> LinkedInJob | None:
+        if not isinstance(item, dict):
+            return None
+
+        post_text = item.get("text") or item.get("content") or item.get("postContent")
+        if not post_text:
+            return None
+            
+        post_url = item.get("url") or item.get("postUrl") or item.get("link")
+        if not post_url or not is_valid_url(post_url):
+            return None
+
+        # Call parser
+        parsed = parse_post(post_text)
+        if not parsed.get("is_hiring_post"):
+            return None
+
+        author_name = item.get("authorName") or item.get("author") or item.get("profileName")
+        author_profile_url = item.get("authorProfileUrl") or item.get("authorUrl") or item.get("profileUrl")
+        author_role = item.get("authorHeadline") or item.get("authorRole")
+        posted_date_raw = item.get("postedDate") or item.get("publishedAt") or item.get("date")
+
+        raw_json = dict(item)
+        return LinkedInJob(
+            job_title=parsed.get("job_title"),
+            company_name=author_name,  # Fallback to author name if company not explicitly tagged
+            linkedin_job_url=post_url, # Use post URL as unique identifier in DB
+            source_type="HIRING_POST",
+            post_url=post_url,
+            post_text=post_text,
+            post_author_name=author_name,
+            post_author_profile_url=author_profile_url,
+            post_author_role=author_role,
+            application_method=parsed.get("application_method"),
+            application_methods=parsed.get("application_methods"),
+            application_email=parsed.get("application_email"),
+            application_platform=parsed.get("application_platform"),
+            application_url=parsed.get("application_url"),
+            posted_date=normalize_date(posted_date_raw),
+            scraped_timestamp=datetime.now(timezone.utc),
+            apify_run_id=run_id,
+            raw_json=raw_json,
+        )

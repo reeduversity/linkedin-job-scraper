@@ -92,7 +92,7 @@ class ApifyClient:
         wait=wait_exponential(multiplier=1, min=2, max=10),
         reraise=True,
     )
-    def run_actor(self, input_data: dict[str, Any] | None = None, *, timeout: int | None = None) -> list[dict[str, Any]]:
+    def run_actor(self, input_data: dict[str, Any] | None = None, *, timeout: int | None = None) -> tuple[list[dict[str, Any]], str]:
         self.verify_token()
         self.verify_actor()
         try:
@@ -102,7 +102,9 @@ class ApifyClient:
             if not dataset_id:
                 raise ApifyUnexpectedError("Apify actor returned no dataset identifier")
             items = list(self._client.dataset(dataset_id).iterate_items())
-            return items
+            
+            run_id = str(run.get("id")) if isinstance(run, dict) else str(getattr(run, "id", ""))
+            return items, run_id
         except UnauthorizedError as exc:
             raise ApifyAuthenticationError(f"Authentication failed while running actor '{self.actor_id}': {exc}") from exc
         except (requests.exceptions.Timeout, TimeoutError) as exc:

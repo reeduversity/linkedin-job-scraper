@@ -1,7 +1,7 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, ExternalLink, CalendarDays, MapPin, Building2, Briefcase, Globe, Blend } from 'lucide-react';
+import { X, ExternalLink, CalendarDays, MapPin, Building2, Briefcase, Globe, Blend, Mail } from 'lucide-react';
 import type { LinkedInJob } from '@/lib/types/api';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -33,9 +33,16 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
               <Dialog.Title className="text-lg font-semibold leading-none tracking-tight">
                 {job.job_title ?? 'Job Details'}
               </Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground mt-1.5">
-                {job.company_name ?? 'Unknown Company'}
-              </Dialog.Description>
+              <div className="flex items-center gap-2 mt-1.5">
+                <Dialog.Description className="text-sm text-muted-foreground">
+                  {job.company_name ?? 'Unknown Company'}
+                </Dialog.Description>
+                {job.source_type === 'HIRING_POST' && (
+                  <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20">
+                    Direct Hiring Post
+                  </span>
+                )}
+              </div>
             </div>
             <Dialog.Close asChild>
               <button className="focus-ring rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
@@ -52,6 +59,9 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
                <InfoItem icon={Briefcase} label="Type" value={job.employment_type} />
                <InfoItem icon={Building2} label="Level" value={job.experience_level} />
                <InfoItem icon={CalendarDays} label="Posted" value={formatDate(job.posted_date)} />
+               {job.application_method && (
+                 <InfoItem icon={Mail} label="Apply Via" value={job.application_method.replace('_', ' ')} />
+               )}
             </div>
             
             {(job.salary || job.easy_apply) && (

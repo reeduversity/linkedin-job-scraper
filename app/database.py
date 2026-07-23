@@ -110,11 +110,23 @@ def initialize_database() -> None:
                     "easy_apply BOOLEAN,"
                     "posted_date TIMESTAMPTZ,"
                     "scraped_timestamp TIMESTAMPTZ NOT NULL DEFAULT now(),"
+                    "apify_run_id TEXT,"
                     "raw_json JSONB NOT NULL,"
                     "created_at TIMESTAMPTZ NOT NULL DEFAULT now(),"
                     "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
                     ")"
                 )
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS apify_run_id TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'JOB_LISTING'")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS post_url TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS post_text TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS post_author_name TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS post_author_profile_url TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS post_author_role TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS application_method TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS application_methods JSONB")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS application_email TEXT")
+                cursor.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS application_platform TEXT")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_jobs_company_name ON jobs (company_name)")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_jobs_posted_date ON jobs (posted_date)")
                 cursor.execute("CREATE INDEX IF NOT EXISTS idx_jobs_location ON jobs (location)")

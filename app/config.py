@@ -18,6 +18,8 @@ else:
 class Settings:
     apify_api_token: str = os.getenv("APIFY_TOKEN", "")
     apify_actor_id: str = os.getenv("APIFY_ACTOR_ID", "apify/linkedin-jobs-scraper")
+    apify_post_actor_id: str = os.getenv("APIFY_POST_ACTOR_ID", "curious_coder/linkedin-post-scraper")
+    post_scraper_enabled: bool = os.getenv("POST_SCRAPER_ENABLED", "True").strip().lower() in {"true", "1", "yes"}
     postgres_host: str = os.getenv("POSTGRES_HOST", "localhost")
     postgres_port: int = int(os.getenv("POSTGRES_PORT", "5432"))
     postgres_db: str = os.getenv("POSTGRES_DB", "linkedin_jobs")

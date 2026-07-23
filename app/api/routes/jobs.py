@@ -6,6 +6,9 @@ from app.models import JobSearchRequest, LinkedInJob
 from app.repository import JobRepository
 from app.scraper import JobScraper
 from app.schemas.responses import StandardResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -88,6 +91,8 @@ async def get_job(job_id: str):
     )
 
 
+from app.scraper import JobScraper, PostScraper
+
 @router.post("/jobs/scrape", response_model=StandardResponse)
 async def scrape_jobs(request: JobSearchRequest):
     # Configuration is validated at startup (main_api.py).
@@ -109,9 +114,30 @@ async def scrape_jobs(request: JobSearchRequest):
     total_validated = scraper.last_run_validated_count
     duplicate_removed = scraper.last_run_duplicate_count
 
+    if settings.post_scraper_enabled:
+        try:
+            logger.info("Running PostScraper...")
+            post_scraper = PostScraper(
+                client=ApifyClient(token=settings.apify_api_token, actor_id=settings.apify_post_actor_id)
+            )
+            posts = post_scraper.fetch_posts(request)
+            jobs.extend(posts)
+            total_fetched += post_scraper.last_run_raw_count
+            total_validated += post_scraper.last_run_validated_count
+            duplicate_removed += post_scraper.last_run_duplicate_count
+        except Exception as e:
+            logger.error(f"Post scraping failed, but continuing with jobs: {e}")
+
     # Step 3: Persist
     repository = JobRepository()
     repository.save_jobs(jobs)
+
+    # Step 4: Cleanup Stale Jobs
+    try:
+        deleted_stale = repository.delete_stale_jobs(14)
+        logger.info(f"Cleaned up {deleted_stale} stale jobs")
+    except Exception as e:
+        logger.error(f"Error cleaning up stale jobs: {e}")
 
     # Tests patch class-level counters; repository may be a fresh instance.
     # Prefer class attributes when available to avoid instance reset issues.

@@ -45,6 +45,8 @@ export interface LinkedInJob {
   skills?: string[] | null;
   industry?: string;
   benefits?: string;
+  source_type?: string;
+  application_method?: string;
   raw_json?: Record<string, unknown>;
 }
 

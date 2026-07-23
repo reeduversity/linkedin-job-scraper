@@ -210,7 +210,16 @@ export default function JobsPage() {
                   <tbody className="divide-y divide-border">
                     {data.items.map((job: LinkedInJob, idx: number) => (
                       <tr key={job.job_id ?? idx} className="hover:bg-muted/30 transition-colors">
-                        <td className="px-4 py-3 font-medium max-w-[200px] truncate">{job.job_title ?? '—'}</td>
+                        <td className="px-4 py-3 font-medium max-w-[200px] truncate">
+                          <div className="flex flex-col gap-1">
+                            <span className="truncate">{job.job_title ?? '—'}</span>
+                            {job.source_type === 'HIRING_POST' && (
+                              <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20 w-fit">
+                                Direct Hiring Post
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">{job.company_name ?? '—'}</td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">{job.location ?? '—'}</td>
                         <td className="px-4 py-3"><WorkplaceBadge type={job.workplace_type} /></td>

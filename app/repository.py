@@ -60,10 +60,11 @@ class JobRepository:
                             "workplace_type, employment_type, experience_level, salary, currency, description, "
                             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
                             "company_size, application_url, easy_apply, posted_date, scraped_timestamp, "
-                            "raw_json"
+                            "apify_run_id, source_type, post_url, post_text, post_author_name, post_author_profile_url, "
+                            "post_author_role, application_method, application_methods, application_email, application_platform, raw_json"
                             ") VALUES ("
                             "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                            "%s, %s, %s, %s"
+                            "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
                             ")",
                             (
                                 job.job_title,
@@ -91,6 +92,17 @@ class JobRepository:
                                 job.easy_apply,
                                 job.posted_date,
                                 job.scraped_timestamp,
+                                job.apify_run_id,
+                                job.source_type,
+                                job.post_url,
+                                job.post_text,
+                                job.post_author_name,
+                                job.post_author_profile_url,
+                                job.post_author_role,
+                                job.application_method,
+                                Json(job.application_methods) if job.application_methods is not None else None,
+                                job.application_email,
+                                job.application_platform,
                                 Json(job.raw_json),
                             ),
                         )
@@ -104,7 +116,10 @@ class JobRepository:
                             "workplace_type = %s, employment_type = %s, experience_level = %s, salary = %s, currency = %s, "
                             "description = %s, job_summary = %s, skills = %s, industry = %s, benefits = %s, recruiter = %s, "
                             "recruiter_url = %s, company_logo = %s, company_size = %s, application_url = %s, easy_apply = %s, "
-                            "posted_date = %s, scraped_timestamp = %s, raw_json = %s, updated_at = now() "
+                            "posted_date = %s, scraped_timestamp = %s, apify_run_id = %s, source_type = %s, post_url = %s, "
+                            "post_text = %s, post_author_name = %s, post_author_profile_url = %s, post_author_role = %s, "
+                            "application_method = %s, application_methods = %s, application_email = %s, application_platform = %s, "
+                            "raw_json = %s, updated_at = now() "
                             "WHERE linkedin_job_url = %s",
                             (
                                 job.job_title,
@@ -131,6 +146,17 @@ class JobRepository:
                                 job.easy_apply,
                                 job.posted_date,
                                 job.scraped_timestamp,
+                                job.apify_run_id,
+                                job.source_type,
+                                job.post_url,
+                                job.post_text,
+                                job.post_author_name,
+                                job.post_author_profile_url,
+                                job.post_author_role,
+                                job.application_method,
+                                Json(job.application_methods) if job.application_methods is not None else None,
+                                job.application_email,
+                                job.application_platform,
                                 Json(job.raw_json),
                                 linkedin_job_url,
                             ),
@@ -139,11 +165,24 @@ class JobRepository:
 
                 conn.commit()
                 return job
+
         except psycopg.Error as exc:
-            raise self._handle_failure(exc)
-        except Exception as exc:
-            # Keep consistent error surface for tests.
-            raise self._handle_failure(exc)
+            raise DatabaseError(f"Failed to save job '{linkedin_job_url}': {exc}") from exc
+
+    def delete_stale_jobs(self, days: int = 14) -> int:
+        """Deletes jobs that haven't been updated in the specified number of days."""
+        try:
+            with get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        "DELETE FROM jobs WHERE updated_at < now() - interval '%s days'",
+                        (days,),
+                    )
+                    deleted_count = cursor.rowcount
+                conn.commit()
+                return deleted_count
+        except psycopg.Error as exc:
+            raise DatabaseError(f"Failed to delete stale jobs: {exc}") from exc
 
     def save_jobs(self, jobs: list[LinkedInJob]) -> list[LinkedInJob]:
         initialize_database()
@@ -184,9 +223,11 @@ class JobRepository:
                                 "workplace_type, employment_type, experience_level, salary, currency, description, "
                                 "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
                                 "company_size, application_url, easy_apply, posted_date, scraped_timestamp, "
-                                "raw_json"
+                                "apify_run_id, source_type, post_url, post_text, post_author_name, post_author_profile_url, "
+                                "post_author_role, application_method, application_methods, application_email, application_platform, raw_json"
                                 ") VALUES ("
-                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
                                 ")",
                                 (
                                     job.job_title,
@@ -214,6 +255,17 @@ class JobRepository:
                                     job.easy_apply,
                                     job.posted_date,
                                     job.scraped_timestamp,
+                                    job.apify_run_id,
+                                    job.source_type,
+                                    job.post_url,
+                                    job.post_text,
+                                    job.post_author_name,
+                                    job.post_author_profile_url,
+                                    job.post_author_role,
+                                    job.application_method,
+                                    Json(job.application_methods) if job.application_methods is not None else None,
+                                    job.application_email,
+                                    job.application_platform,
                                     Json(job.raw_json),
                                 ),
                             )
@@ -225,7 +277,10 @@ class JobRepository:
                                 "workplace_type = %s, employment_type = %s, experience_level = %s, salary = %s, currency = %s, "
                                 "description = %s, job_summary = %s, skills = %s, industry = %s, benefits = %s, recruiter = %s, "
                                 "recruiter_url = %s, company_logo = %s, company_size = %s, application_url = %s, easy_apply = %s, "
-                                "posted_date = %s, scraped_timestamp = %s, raw_json = %s, updated_at = now() "
+                                "posted_date = %s, scraped_timestamp = %s, apify_run_id = %s, source_type = %s, post_url = %s, "
+                                "post_text = %s, post_author_name = %s, post_author_profile_url = %s, post_author_role = %s, "
+                                "application_method = %s, application_methods = %s, application_email = %s, application_platform = %s, "
+                                "raw_json = %s, updated_at = now() "
                                 "WHERE linkedin_job_url = %s",
                                 (
                                     job.job_title,
@@ -252,6 +307,17 @@ class JobRepository:
                                     job.easy_apply,
                                     job.posted_date,
                                     job.scraped_timestamp,
+                                    job.apify_run_id,
+                                    job.source_type,
+                                    job.post_url,
+                                    job.post_text,
+                                    job.post_author_name,
+                                    job.post_author_profile_url,
+                                    job.post_author_role,
+                                    job.application_method,
+                                    Json(job.application_methods) if job.application_methods is not None else None,
+                                    job.application_email,
+                                    job.application_platform,
                                     Json(job.raw_json),
                                     linkedin_job_url,
                                 ),

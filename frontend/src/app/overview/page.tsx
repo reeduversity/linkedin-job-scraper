@@ -179,7 +179,14 @@ function RecentJobsTable() {
                 className="border-b border-border last:border-b-0 transition-colors hover:bg-muted/30"
               >
                 <td className="px-4 py-3 font-medium max-w-[200px] truncate">
-                  {job.job_title ?? '—'}
+                  <div className="flex flex-col gap-1">
+                    <span className="truncate">{job.job_title ?? '—'}</span>
+                    {job.source_type === 'HIRING_POST' && (
+                      <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20 w-fit">
+                        Direct Hiring Post
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground max-w-[160px] truncate">
                   {job.company_name ?? '—'}
@@ -222,8 +229,13 @@ function RecentJobsTable() {
             className="p-4 space-y-2"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
+              <div className="min-w-0 flex flex-col gap-1">
                 <p className="font-medium truncate">{job.job_title ?? '—'}</p>
+                {job.source_type === 'HIRING_POST' && (
+                  <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20 w-fit">
+                    Direct Hiring Post
+                  </span>
+                )}
                 <p className="text-sm text-muted-foreground truncate">{job.company_name ?? '—'}</p>
               </div>
               <WorkplaceBadge type={job.workplace_type} />
