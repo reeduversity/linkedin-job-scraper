@@ -94,36 +94,101 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
               </div>
             )}
 
-            <div className="flex flex-wrap gap-3 pt-2">
-               {job.linkedin_job_url && !job.post_url && (
-                 <a
-                   href={job.linkedin_job_url}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   className="focus-ring inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                 >
-                   View on LinkedIn <ExternalLink className="h-4 w-4" />
-                 </a>
-               )}
-               {job.post_url && (
-                 <a
-                   href={job.post_url}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   className="focus-ring inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-emerald-700"
-                 >
-                   View Original Post <ExternalLink className="h-4 w-4" />
-                 </a>
-               )}
-               {job.application_url && (
-                 <a
-                   href={job.application_url}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   className="focus-ring inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                 >
-                   Company Website <ExternalLink className="h-4 w-4" />
-                 </a>
+            <div className="flex flex-col gap-3 pt-4 border-t border-border mt-4">
+               {job.source_type === 'LINKEDIN_HIRING_POST' ? (
+                 <div className="space-y-4">
+                   <h3 className="text-sm font-semibold">Application Instructions</h3>
+                   {(!job.application_methods || job.application_methods.length === 0) ? (
+                     <p className="text-sm text-muted-foreground italic">Application instructions not provided.</p>
+                   ) : (
+                     <div className="flex flex-col gap-3">
+                       {job.application_methods.includes('EMAIL') && job.application_email && (
+                         <div className="flex flex-col gap-2 rounded-lg border border-border p-4 bg-muted/20">
+                           <span className="text-sm font-medium">Application Email: <span className="text-muted-foreground font-normal">{job.application_email}</span></span>
+                           <div className="flex gap-2">
+                             <button
+                               onClick={() => navigator.clipboard.writeText(job.application_email!)}
+                               className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                             >
+                               Copy Email
+                             </button>
+                             <a
+                               href={`mailto:${job.application_email}`}
+                               className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                             >
+                               Email
+                             </a>
+                           </div>
+                         </div>
+                       )}
+                       {job.application_methods.includes('FORM') && job.application_url && (
+                         <a
+                           href={job.application_url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 w-fit"
+                         >
+                           Apply via {job.application_platform === 'GOOGLE_FORMS' ? 'Google Form' : 'Form'} <ExternalLink className="h-4 w-4" />
+                         </a>
+                       )}
+                       {job.application_methods.includes('EXTERNAL_LINK') && job.application_url && (
+                         <a
+                           href={job.application_url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 w-fit"
+                         >
+                           Apply Now <ExternalLink className="h-4 w-4" />
+                         </a>
+                       )}
+                       {job.application_methods.includes('DIRECT_MESSAGE') && (job.post_author_profile_url || job.post_url) && (
+                         <a
+                           href={job.post_author_profile_url || job.post_url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center justify-center gap-2 rounded-md bg-[#0a66c2] px-4 py-2.5 text-sm font-medium text-white shadow transition-colors hover:bg-[#004182] w-fit"
+                         >
+                           Contact Hiring Person on LinkedIn <ExternalLink className="h-4 w-4" />
+                         </a>
+                       )}
+                     </div>
+                   )}
+                   {job.post_url && (
+                     <div className="pt-2">
+                       <a
+                         href={job.post_url}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4"
+                       >
+                         View Original Post <ExternalLink className="h-3 w-3" />
+                       </a>
+                     </div>
+                   )}
+                 </div>
+               ) : (
+                 <div className="flex flex-wrap gap-3">
+                   {job.linkedin_job_url && (
+                     <a
+                       href={job.linkedin_job_url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="focus-ring inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                     >
+                       View on LinkedIn <ExternalLink className="h-4 w-4" />
+                     </a>
+                   )}
+                   {job.application_url && (
+                     <a
+                       href={job.application_url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="focus-ring inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                     >
+                       Company Website <ExternalLink className="h-4 w-4" />
+                     </a>
+                   )}
+                 </div>
                )}
             </div>
           </div>

@@ -156,10 +156,28 @@ def parse_post(post_text: str) -> dict[str, Any]:
     elif hiring_intent and (role_detected or application_methods):
         confidence = "MEDIUM"
         
+    # 5. Extract Company Name
+    company_name = "Unknown Company"
+    # Simple regex to catch common company mentions
+    company_patterns = [
+        r"\bhiring (?:at|for)\s+([A-Z][a-zA-Z0-9&.\- ]+?)(?:\.|!|,|\n|$)",
+        r"\bjoin (?:us at )?([A-Z][a-zA-Z0-9&.\- ]+?)(?:\.|!|,|\n|$)",
+        r"\b(?:welcome to )?([A-Z][a-zA-Z0-9&.\- ]+?) is hiring\b"
+    ]
+    for pattern in company_patterns:
+        match = re.search(pattern, post_text)
+        if match:
+            name = match.group(1).strip()
+            # Avoid matching long sentences or pronouns
+            if 2 <= len(name) <= 30 and not any(w in name.lower().split() for w in ["the", "a", "an", "our", "my", "your", "we", "us", "team"]):
+                company_name = name
+                break
+
     return {
         "is_hiring_post": True,
         "confidence": confidence,
         "job_title": extracted_role.title(),
+        "company_name": company_name,
         "application_method": primary_method,
         "application_methods": application_methods,
         "application_email": application_email,
