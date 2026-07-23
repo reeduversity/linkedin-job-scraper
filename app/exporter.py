@@ -51,6 +51,12 @@ class ExportService:
                 "easy_apply": str(job.easy_apply) if job.easy_apply is not None else "",
                 "posted_date": job.posted_date.isoformat() if job.posted_date else "",
                 "scraped_timestamp": job.scraped_timestamp.isoformat() if job.scraped_timestamp else "",
+                "source_type": job.source_type or "",
+                "post_url": job.post_url or "",
+                "post_author_name": job.post_author_name or "",
+                "application_method": job.application_method or "",
+                "application_email": job.application_email or "",
+                "application_platform": job.application_platform or "",
             })
         return rows
 
@@ -66,7 +72,9 @@ class ExportService:
             "location", "country", "workplace_type", "employment_type", "experience_level",
             "salary", "currency", "description", "job_summary", "skills", "industry",
             "benefits", "recruiter", "recruiter_url", "company_logo", "company_size",
-            "application_url", "easy_apply", "posted_date", "scraped_timestamp"
+            "application_url", "easy_apply", "posted_date", "scraped_timestamp",
+            "source_type", "post_url", "post_author_name", "application_method",
+            "application_email", "application_platform"
         ]
 
         try:
@@ -90,7 +98,9 @@ class ExportService:
             "location", "country", "workplace_type", "employment_type", "experience_level",
             "salary", "currency", "description", "job_summary", "skills", "industry",
             "benefits", "recruiter", "recruiter_url", "company_logo", "company_size",
-            "application_url", "easy_apply", "posted_date", "scraped_timestamp"
+            "application_url", "easy_apply", "posted_date", "scraped_timestamp",
+            "source_type", "post_url", "post_author_name", "application_method",
+            "application_email", "application_platform"
         ]
 
         wb = openpyxl.Workbook()
@@ -161,6 +171,12 @@ class ExportService:
                 "easy_apply": job.easy_apply,
                 "posted_date": job.posted_date.isoformat() if job.posted_date else None,
                 "scraped_timestamp": job.scraped_timestamp.isoformat() if job.scraped_timestamp else None,
+                "source_type": job.source_type,
+                "post_url": job.post_url,
+                "post_author_name": job.post_author_name,
+                "application_method": job.application_method,
+                "application_email": job.application_email,
+                "application_platform": job.application_platform,
                 "raw_json": job.raw_json,
             })
 
