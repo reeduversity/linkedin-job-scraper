@@ -231,7 +231,7 @@ function RecentJobsTable() {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex flex-col gap-1">
                 <p className="font-medium truncate">{job.job_title ?? '—'}</p>
-                {job.source_type === 'HIRING_POST' && (
+                {job.source_type === 'LINKEDIN_HIRING_POST' && (
                   <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20 w-fit">
                     Direct Hiring Post
                   </span>
