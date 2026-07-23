@@ -7,7 +7,6 @@ from typing import Any
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from app.apify_client import (
-
     ApifyAuthenticationError,
     ApifyClient,
     ApifyConfigurationError,
@@ -17,6 +16,7 @@ from app.apify_client import (
     ApifyTimeoutError,
 )
 from app.duplicate_detector import remove_duplicates
+from app.config import settings
 from app.models import JobSearchRequest, LinkedInJob
 from app.post_parser import parse_post
 from app.utils import is_valid_url, normalize_date, normalize_optional_string, normalize_salary
@@ -241,7 +241,7 @@ class PostScraper:
     """Scraper that calls the Apify LinkedIn Post Actor and extracts HIRING_POSTs."""
 
     def __init__(self, client: ApifyClient | None = None) -> None:
-        self.client = client or ApifyClient()
+        self.client = client or ApifyClient(actor_id=settings.apify_post_actor_id)
         self.last_run_raw_count: int = 0
         self.last_run_validated_count: int = 0
         self.last_run_duplicate_count: int = 0
