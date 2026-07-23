@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.get("/export/csv")
 async def export_csv():
-    export_dir = Path("data/csv")
+    export_dir = Path("/tmp/data/csv")
     export_dir.mkdir(parents=True, exist_ok=True)
     temp_path = export_dir / "jobs_export.csv"
 
@@ -25,7 +25,7 @@ async def export_csv():
 
 @router.get("/export/excel")
 async def export_excel():
-    export_dir = Path("data/excel")
+    export_dir = Path("/tmp/data/excel")
     export_dir.mkdir(parents=True, exist_ok=True)
     temp_path = export_dir / "jobs_export.xlsx"
 
@@ -41,7 +41,7 @@ async def export_excel():
 
 @router.get("/export/json")
 async def export_json():
-    export_dir = Path("data")
+    export_dir = Path("/tmp/data/json")
     export_dir.mkdir(parents=True, exist_ok=True)
     temp_path = export_dir / "jobs_export.json"
 
