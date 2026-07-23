@@ -221,10 +221,14 @@ export default function JobsPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">{job.company_name ?? '—'}</td>
-                        <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">{job.location ?? '—'}</td>
-                        <td className="px-4 py-3"><WorkplaceBadge type={job.workplace_type} /></td>
+                        <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">
+                          {job.location ? job.location : (job.source_type === 'HIRING_POST' ? 'Not specified (Post)' : '—')}
+                        </td>
+                        <td className="px-4 py-3">
+                          {job.workplace_type ? <WorkplaceBadge type={job.workplace_type} /> : (job.source_type === 'HIRING_POST' ? <span className="text-xs text-muted-foreground">From Post</span> : '—')}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
-                          {job.posted_date ? formatDistanceToNow(new Date(job.posted_date), { addSuffix: true }) : '—'}
+                          {job.posted_date ? formatDistanceToNow(new Date(job.posted_date), { addSuffix: true }) : (job.source_type === 'HIRING_POST' ? 'Recent' : '—')}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <button
