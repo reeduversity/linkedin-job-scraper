@@ -8,7 +8,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 120_000,
+  timeout: 300_000,
 });
 
 /** Normalised error shape thrown by the interceptor. */

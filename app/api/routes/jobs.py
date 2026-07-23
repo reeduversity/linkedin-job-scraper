@@ -6,7 +6,6 @@ from app.models import JobSearchRequest, LinkedInJob
 from app.repository import JobRepository
 from app.scraper import JobScraper
 from app.schemas.responses import StandardResponse
-from app import config_validator
 
 router = APIRouter()
 
@@ -91,39 +90,18 @@ async def get_job(job_id: str):
 
 @router.post("/jobs/scrape", response_model=StandardResponse)
 async def scrape_jobs(request: JobSearchRequest):
-    # Step 1: Validate configuration
-    config_validator.load_environment()
-    env_values = config_validator.validate_required_env()
-    config = config_validator.build_config(env_values)
-
-    # Verify Apify
-    config_validator.verify_apify_token(config.apify_token)
-
-    # Verify Database
-    config_validator.create_directories()
-    config_validator.create_database_if_missing(
-        config.postgres_host,
-        config.postgres_port,
-        config.postgres_db,
-        config.postgres_user,
-        config.postgres_password,
-    )
-    config_validator.verify_postgres_connection(
-        config.postgres_host,
-        config.postgres_port,
-        config.postgres_db,
-        config.postgres_user,
-        config.postgres_password,
-    )
+    # Configuration is validated at startup (main_api.py).
+    # Import settings for runtime values only.
+    from app.config import settings
 
     # Step 2: Run scraping
     start_time = datetime.now(timezone.utc)
 
-    # Use validated runtime configuration explicitly (no fallback to app/config.py defaults)
+    # Use runtime settings for Apify credentials
     from app.apify_client import ApifyClient
 
     scraper = JobScraper(
-        client=ApifyClient(token=config.apify_token, actor_id=config.apify_actor_id)
+        client=ApifyClient(token=settings.apify_api_token, actor_id=settings.apify_actor_id)
     )
     jobs = scraper.fetch_jobs(request)
 

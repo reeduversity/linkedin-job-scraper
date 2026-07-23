@@ -70,19 +70,27 @@ app = FastAPI(
 import os as _os
 
 _extra_origins = _os.getenv("ALLOWED_ORIGINS", "").strip()
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-if _extra_origins:
-    for _origin in _extra_origins.split(","):
-        _o = _origin.strip()
-        if _o and _o not in origins:
-            origins.append(_o)
+
+# When wildcard is used, allow all origins (credentials must be False per CORS spec)
+if _extra_origins == "*":
+    origins = ["*"]
+    _allow_credentials = False
+else:
+    origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+    if _extra_origins:
+        for _origin in _extra_origins.split(","):
+            _o = _origin.strip()
+            if _o and _o not in origins:
+                origins.append(_o)
+    _allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -104,6 +112,18 @@ app.include_router(jobs.router, prefix="/api", tags=["jobs"])
 app.include_router(statistics.router, prefix="/api", tags=["statistics"])
 app.include_router(exports.router, prefix="/api", tags=["exports"])
 app.include_router(scheduler.router, prefix="/api", tags=["scheduler"])
+
+
+# 8. Root route — so visiting "/" doesn't return 404
+@app.get("/")
+async def root():
+    return {
+        "success": True,
+        "message": "LinkedIn Job Scraper API is running",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
 
 
 @app.on_event("startup")

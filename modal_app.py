@@ -17,6 +17,8 @@ image = (
 @app.function(
     image=image,
     secrets=[modal.Secret.from_dotenv()],
+    timeout=300,
+    scaledown_window=120,
 )
 @modal.asgi_app()
 def fastapi_app():

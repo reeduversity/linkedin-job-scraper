@@ -43,7 +43,7 @@ class JobSearchRequest(BaseModel):
             "country": self.country,
             "remote": workplace_types or None,  # actor schema: array
             "employmentType": self.employment_type,
-            "experienceLevel": self.experience_level,
+            "experienceLevel": [self.experience_level] if self.experience_level else None,
             "datePosted": self.date_posted,
             "company": self.company,
             "maxResults": self.max_results,
