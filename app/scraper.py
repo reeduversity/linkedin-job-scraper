@@ -262,7 +262,10 @@ class PostScraper:
         query_parts.append("hiring")
         query = " ".join(query_parts)
         
-        input_data = {"searchTerms": query, "maxResults": request.max_results if request else 10}
+        input_data = {
+            "keywords": [query], 
+            "max_posts": max(10, request.max_results if request else 10)
+        }
 
         raw_items, run_id = self.client.run_actor(input_data, timeout=300)
 
@@ -288,11 +291,14 @@ class PostScraper:
         if not isinstance(item, dict):
             return None
 
-        post_text = item.get("text") or item.get("content") or item.get("postContent")
+        # Handle post text
+        post_text = item.get("text")
+        if not post_text and isinstance(item.get("content"), dict):
+            post_text = item["content"].get("text")
         if not post_text:
             return None
             
-        post_url = item.get("url") or item.get("postUrl") or item.get("link")
+        post_url = item.get("post_url") or item.get("url") or item.get("link")
         if not post_url or not is_valid_url(post_url):
             return None
 
@@ -301,10 +307,13 @@ class PostScraper:
         if not parsed.get("is_hiring_post"):
             return None
 
-        author_name = item.get("authorName") or item.get("author") or item.get("profileName")
-        author_profile_url = item.get("authorProfileUrl") or item.get("authorUrl") or item.get("profileUrl")
-        author_role = item.get("authorHeadline") or item.get("authorRole")
-        posted_date_raw = item.get("postedDate") or item.get("publishedAt") or item.get("date")
+        author_data = item.get("author", {})
+        author_name = author_data.get("name") or item.get("owner_name") or "LinkedIn User"
+        author_profile_url = author_data.get("profile_url") or item.get("owner_profile_picture")
+        author_role = author_data.get("headline") or ""
+        
+        posted_at_data = item.get("posted_at", {})
+        posted_date_raw = posted_at_data.get("timestamp") or item.get("timestamp") or posted_at_data.get("date")
 
         raw_json = dict(item)
         return LinkedInJob(

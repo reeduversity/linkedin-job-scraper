@@ -209,6 +209,17 @@ def validate_job(job: LinkedInJob | Job | dict[str, Any]) -> LinkedInJob:
         easy_apply=data.get("easy_apply"),
         posted_date=normalize_date(data.get("posted_date")),
         scraped_timestamp=data.get("scraped_timestamp") or datetime.now(timezone.utc),
+        apify_run_id=_normalize_text(data.get("apify_run_id")),
+        source_type=_normalize_text(data.get("source_type")) or "JOB_LISTING",
+        post_url=_normalize_text(data.get("post_url")),
+        post_text=_normalize_text(data.get("post_text")),
+        post_author_name=_normalize_text(data.get("post_author_name")),
+        post_author_profile_url=_normalize_text(data.get("post_author_profile_url")),
+        post_author_role=_normalize_text(data.get("post_author_role")),
+        application_method=_normalize_text(data.get("application_method")),
+        application_methods=data.get("application_methods"),
+        application_email=_normalize_text(data.get("application_email")),
+        application_platform=_normalize_text(data.get("application_platform")),
         raw_json=data.get("raw_json") or {},
     )
 
