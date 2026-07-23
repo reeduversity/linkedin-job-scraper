@@ -295,21 +295,34 @@ class PostScraper:
                     if request.date_posted == "past-month" and delta > 2592000:
                         continue
 
+                post_text_lower = (job.post_text or "").lower()
+
                 # Apply exact company matching if requested
                 if request and request.company:
-                    if not job.company_name or request.company.lower() not in job.company_name.lower():
-                        continue
+                    req_company = request.company.lower()
+                    if job.company_name and job.company_name != "Unknown Company":
+                        if req_company not in job.company_name.lower():
+                            continue
+                    else:
+                        if req_company not in post_text_lower:
+                            continue
 
                 # Apply workplace type if requested (only if explicitly parsed)
                 if request and (request.remote or request.hybrid or request.onsite):
-                    if request.remote and job.workplace_type != "REMOTE": continue
-                    if request.hybrid and job.workplace_type != "HYBRID": continue
-                    if request.onsite and job.workplace_type != "ONSITE": continue
+                    has_match = False
+                    if request.remote and "remote" in post_text_lower: has_match = True
+                    if request.hybrid and "hybrid" in post_text_lower: has_match = True
+                    if request.onsite and ("onsite" in post_text_lower or "on-site" in post_text_lower or "office" in post_text_lower): has_match = True
+                    
+                    if not has_match:
+                        continue
                 
                 # Apply employment type if requested
                 if request and request.employment_type:
-                    if not job.employment_type or job.employment_type.lower() != request.employment_type.lower():
-                        continue
+                    emp_type = request.employment_type.lower()
+                    if emp_type == "full-time" and ("full-time" not in post_text_lower and "full time" not in post_text_lower): continue
+                    if emp_type == "part-time" and ("part-time" not in post_text_lower and "part time" not in post_text_lower): continue
+                    if emp_type == "contract" and "contract" not in post_text_lower: continue
 
                 jobs.append(job)
 

@@ -40,6 +40,12 @@ APPLICATION_INTENT_PATTERNS = [
     r"\breach out to me\b",
     r"\bfill the form\b",
     r"\bregister here\b",
+    r"\bcomment below\b",
+    r"\bdrop a comment\b",
+    r"\bdrop interested\b",
+    r"\bin the comments\b",
+    r"\bcomment down below\b",
+    r"\bcomment interested\b",
 ]
 
 # Common roles for role detection (simplified)
@@ -122,6 +128,18 @@ def parse_post(post_text: str) -> dict[str, Any]:
     # Direct Message Detection
     if any(re.search(pattern, text_lower) for pattern in [r"\bdm me\b", r"\bmessage me\b", r"\breach out to me\b"]):
         application_methods.append("DIRECT_MESSAGE")
+
+    # Comment Detection
+    comment_patterns = [
+        r"\bcomment below\b",
+        r"\bdrop a comment\b",
+        r"\bdrop interested\b",
+        r"\bin the comments\b",
+        r"\bcomment down below\b",
+        r"\bcomment interested\b"
+    ]
+    if any(re.search(pattern, text_lower) for pattern in comment_patterns):
+        application_methods.append("COMMENT")
         
     application_methods = sorted(list(set(application_methods)))
     primary_method = application_methods[0] if application_methods else None

@@ -151,6 +151,16 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
                            Contact Hiring Person on LinkedIn <ExternalLink className="h-4 w-4" />
                          </a>
                        )}
+                       {job.application_methods.includes('COMMENT') && job.post_url && (
+                         <a
+                           href={job.post_url}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center justify-center gap-2 rounded-md bg-[#0a66c2] px-4 py-2.5 text-sm font-medium text-white shadow transition-colors hover:bg-[#004182] w-fit"
+                         >
+                           Apply by Commenting on Post <ExternalLink className="h-4 w-4" />
+                         </a>
+                       )}
                      </div>
                    )}
                    {job.post_url && (
