@@ -37,7 +37,7 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
                 <Dialog.Description className="text-sm text-muted-foreground">
                   {job.company_name ?? 'Unknown Company'}
                 </Dialog.Description>
-                {job.source_type === 'HIRING_POST' && (
+                {job.source_type === 'LINKEDIN_HIRING_POST' && (
                   <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20">
                     Direct Hiring Post
                   </span>

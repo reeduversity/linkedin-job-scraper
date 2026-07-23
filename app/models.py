@@ -91,7 +91,7 @@ class LinkedInJob(BaseModel):
     job_id: str | None = None
     
     # HIRING_POST specific fields
-    source_type: str = "JOB_LISTING"
+    source_type: str = "LINKEDIN_JOB"
     post_url: str | None = None
     post_text: str | None = None
     post_author_name: str | None = None

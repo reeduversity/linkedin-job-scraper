@@ -258,6 +258,13 @@ class PostScraper:
         if request:
             if request.keyword: query_parts.append(request.keyword)
             if request.location: query_parts.append(request.location)
+            if request.company: query_parts.append(request.company)
+            
+            # Map workplace type to string keyword to help discover posts
+            if request.remote: query_parts.append("remote")
+            elif request.hybrid: query_parts.append("hybrid")
+            elif request.onsite: query_parts.append("onsite")
+            
         # Always append a hiring keyword to narrow down LinkedIn posts to actual job opportunities
         query_parts.append("hiring")
         query = " ".join(query_parts)
@@ -273,6 +280,37 @@ class PostScraper:
         for item in raw_items:
             job = self._normalize_post_item(item, run_id)
             if job is not None:
+                # Apply strict date filtering since actor cannot filter by date natively
+                if request and request.date_posted and job.posted_date:
+                    now_utc = datetime.now(timezone.utc)
+                    job_dt = job.posted_date
+                    if job_dt.tzinfo is None:
+                        job_dt = job_dt.replace(tzinfo=timezone.utc)
+                    delta = (now_utc - job_dt).total_seconds()
+                    
+                    if request.date_posted == "past-24h" and delta > 86400:
+                        continue
+                    if request.date_posted == "past-week" and delta > 604800:
+                        continue
+                    if request.date_posted == "past-month" and delta > 2592000:
+                        continue
+
+                # Apply exact company matching if requested
+                if request and request.company:
+                    if not job.company_name or request.company.lower() not in job.company_name.lower():
+                        continue
+
+                # Apply workplace type if requested (only if explicitly parsed)
+                if request and (request.remote or request.hybrid or request.onsite):
+                    if request.remote and job.workplace_type != "REMOTE": continue
+                    if request.hybrid and job.workplace_type != "HYBRID": continue
+                    if request.onsite and job.workplace_type != "ONSITE": continue
+                
+                # Apply employment type if requested
+                if request and request.employment_type:
+                    if not job.employment_type or job.employment_type.lower() != request.employment_type.lower():
+                        continue
+
                 jobs.append(job)
 
         # Duplicate detection and validation
@@ -318,9 +356,9 @@ class PostScraper:
         raw_json = dict(item)
         return LinkedInJob(
             job_title=parsed.get("job_title"),
-            company_name=author_name,  # Fallback to author name if company not explicitly tagged
+            company_name=parsed.get("company_name"),  # Do NOT assume author name is company name
             linkedin_job_url=post_url, # Use post URL as unique identifier in DB
-            source_type="HIRING_POST",
+            source_type="LINKEDIN_HIRING_POST",
             post_url=post_url,
             post_text=post_text,
             post_author_name=author_name,

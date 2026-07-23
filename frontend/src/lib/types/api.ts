@@ -45,7 +45,7 @@ export interface LinkedInJob {
   skills?: string[] | null;
   industry?: string;
   benefits?: string;
-  source_type?: string;
+  source_type?: 'LINKEDIN_JOB' | 'LINKEDIN_HIRING_POST';
   post_url?: string;
   post_author_name?: string;
   post_author_profile_url?: string;

@@ -213,7 +213,7 @@ export default function JobsPage() {
                         <td className="px-4 py-3 font-medium max-w-[200px] truncate">
                           <div className="flex flex-col gap-1">
                             <span className="truncate">{job.job_title ?? '—'}</span>
-                            {job.source_type === 'HIRING_POST' && (
+                            {job.source_type === 'LINKEDIN_HIRING_POST' && (
                               <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 ring-1 ring-inset ring-emerald-500/20 w-fit">
                                 Direct Hiring Post
                               </span>
@@ -222,13 +222,13 @@ export default function JobsPage() {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">{job.company_name ?? '—'}</td>
                         <td className="px-4 py-3 text-muted-foreground max-w-[150px] truncate">
-                          {job.location ? job.location : (job.source_type === 'HIRING_POST' ? 'Not specified (Post)' : '—')}
+                          {job.location ? job.location : (job.source_type === 'LINKEDIN_HIRING_POST' ? 'Not specified (Post)' : '—')}
                         </td>
                         <td className="px-4 py-3">
-                          {job.workplace_type ? <WorkplaceBadge type={job.workplace_type} /> : (job.source_type === 'HIRING_POST' ? <span className="text-xs text-muted-foreground">From Post</span> : '—')}
+                          {job.workplace_type ? <WorkplaceBadge type={job.workplace_type} /> : (job.source_type === 'LINKEDIN_HIRING_POST' ? <span className="text-xs text-muted-foreground">From Post</span> : '—')}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
-                          {job.posted_date ? formatDistanceToNow(new Date(job.posted_date), { addSuffix: true }) : (job.source_type === 'HIRING_POST' ? 'Recent' : '—')}
+                          {job.posted_date ? formatDistanceToNow(new Date(job.posted_date), { addSuffix: true }) : (job.source_type === 'LINKEDIN_HIRING_POST' ? 'Recent' : '—')}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <button

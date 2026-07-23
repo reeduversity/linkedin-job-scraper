@@ -166,8 +166,8 @@ class JobRepository:
                 conn.commit()
                 return job
 
-        except psycopg.Error as exc:
-            raise DatabaseError(f"Failed to save job '{linkedin_job_url}': {exc}") from exc
+        except Exception as exc:
+            raise self._handle_failure(exc)
 
     def delete_stale_jobs(self, days: int = 14) -> int:
         """Deletes jobs that haven't been updated in the specified number of days."""
@@ -434,7 +434,8 @@ class JobRepository:
             "SELECT job_title, company_name, company_url, linkedin_job_url, job_id, location, country, "
             "workplace_type, employment_type, experience_level, salary, currency, description, "
             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
-            "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json "
+            "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json, "
+            "source_type, post_url, post_author_name, application_method, application_email, application_platform "
             f"FROM jobs{where_str} ORDER BY {sort_by} {sort_order}"
         )
 
@@ -479,6 +480,12 @@ class JobRepository:
                                 posted_date=row[23],
                                 scraped_timestamp=row[24],
                                 raw_json=row[25] or {},
+                                source_type=row[26],
+                                post_url=row[27],
+                                post_author_name=row[28],
+                                application_method=row[29],
+                                application_email=row[30],
+                                application_platform=row[31],
                             )
                         )
             return jobs
@@ -629,7 +636,8 @@ class JobRepository:
             "SELECT job_title, company_name, company_url, linkedin_job_url, job_id, location, country, "
             "workplace_type, employment_type, experience_level, salary, currency, description, "
             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
-            "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json "
+            "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json, "
+            "source_type, post_url, post_author_name, application_method, application_email, application_platform "
             "FROM jobs WHERE job_id = %s"
         )
         try:
@@ -666,6 +674,12 @@ class JobRepository:
                         posted_date=row[23],
                         scraped_timestamp=row[24],
                         raw_json=row[25] or {},
+                        source_type=row[26],
+                        post_url=row[27],
+                        post_author_name=row[28],
+                        application_method=row[29],
+                        application_email=row[30],
+                        application_platform=row[31],
                     )
         except Exception as exc:
             raise self._handle_failure(exc)

@@ -128,6 +128,9 @@ async def scrape_jobs(request: JobSearchRequest):
         except Exception as e:
             logger.error(f"Post scraping failed, but continuing with jobs: {e}")
 
+    if request.max_results and len(jobs) > request.max_results:
+        jobs = jobs[:request.max_results]
+
     # Step 3: Persist
     repository = JobRepository()
     repository.save_jobs(jobs)
@@ -157,7 +160,8 @@ async def scrape_jobs(request: JobSearchRequest):
         "duplicates_removed": duplicate_removed,
         "saved": jobs_saved,
         "failed": failed_jobs,
-        "execution_time": round(execution_time, 2)
+        "execution_time": round(execution_time, 2),
+        "items": jobs
     }
 
     return StandardResponse(
