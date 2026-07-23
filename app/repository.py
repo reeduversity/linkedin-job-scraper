@@ -583,6 +583,9 @@ class JobRepository:
                         cursor.execute("SELECT COUNT(*) FROM jobs WHERE easy_apply = TRUE")
                         stats["easy_apply_jobs"] = cursor.fetchone()[0] or 0
 
+                        cursor.execute("SELECT COUNT(*) FROM jobs WHERE source_type = 'HIRING_POST'")
+                        stats["hiring_posts"] = cursor.fetchone()[0] or 0
+
                         cursor.execute("SELECT MIN(scraped_timestamp), MAX(scraped_timestamp) FROM jobs")
                         oldest, latest = cursor.fetchone()
                         stats["oldest_scrape_date"] = oldest

@@ -46,7 +46,12 @@ export interface LinkedInJob {
   industry?: string;
   benefits?: string;
   source_type?: string;
+  post_url?: string;
+  post_author_name?: string;
+  post_author_profile_url?: string;
   application_method?: string;
+  application_email?: string;
+  application_platform?: string;
   raw_json?: Record<string, unknown>;
 }
 
@@ -88,6 +93,7 @@ export interface StatisticsData {
   hybrid_jobs: number;
   onsite_jobs: number;
   easy_apply_jobs: number;
+  hiring_posts?: number;
   latest_scrape_date?: string | null;
   oldest_scrape_date?: string | null;
   duplicate_count: number;

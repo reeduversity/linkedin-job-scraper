@@ -102,8 +102,8 @@ function KpiGrid() {
 
   const cards = [
     { title: 'Total Jobs', value: data.total_jobs, icon: Briefcase, desc: 'Jobs in database' },
+    { title: 'Hiring Posts', value: data.hiring_posts ?? 0, icon: Briefcase, desc: 'Direct employee posts' },
     { title: 'Companies', value: data.total_companies, icon: Building2, desc: 'Unique companies' },
-    { title: 'Countries', value: data.total_countries, icon: Globe, desc: 'Unique countries' },
     { title: 'Remote', value: data.remote_jobs, icon: Wifi, desc: 'Remote positions' },
     { title: 'Hybrid', value: data.hybrid_jobs, icon: Blend, desc: 'Hybrid positions' },
     { title: 'Onsite', value: data.onsite_jobs, icon: MapPin, desc: 'Onsite positions' },

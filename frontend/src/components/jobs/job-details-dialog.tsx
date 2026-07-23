@@ -62,6 +62,12 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
                {job.application_method && (
                  <InfoItem icon={Mail} label="Apply Via" value={job.application_method.replace('_', ' ')} />
                )}
+               {job.application_email && (
+                 <InfoItem icon={Mail} label="Email" value={job.application_email} />
+               )}
+               {job.application_platform && (
+                 <InfoItem icon={Globe} label="Platform" value={job.application_platform} />
+               )}
             </div>
             
             {(job.salary || job.easy_apply) && (
@@ -89,7 +95,7 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
             )}
 
             <div className="flex flex-wrap gap-3 pt-2">
-               {job.linkedin_job_url && (
+               {job.linkedin_job_url && !job.post_url && (
                  <a
                    href={job.linkedin_job_url}
                    target="_blank"
@@ -97,6 +103,16 @@ export function JobDetailsDialog({ job, open, onOpenChange }: JobDetailsDialogPr
                    className="focus-ring inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
                  >
                    View on LinkedIn <ExternalLink className="h-4 w-4" />
+                 </a>
+               )}
+               {job.post_url && (
+                 <a
+                   href={job.post_url}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="focus-ring inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-emerald-700"
+                 >
+                   View Original Post <ExternalLink className="h-4 w-4" />
                  </a>
                )}
                {job.application_url && (

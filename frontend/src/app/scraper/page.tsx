@@ -125,7 +125,7 @@ export default function ScraperPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Scraper Control</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Configure and run LinkedIn job scraping operations. Uses your Apify integration.
+          Configure and run LinkedIn job scraping operations. Uses your Apify integration to discover both formal Job Listings and direct Hiring Posts.
         </p>
       </div>
 
