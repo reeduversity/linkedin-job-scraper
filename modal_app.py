@@ -1,7 +1,7 @@
 import modal
 
 # Define the Modal App
-app = modal.App("linkedin-job-scraper-test")
+app = modal.App("linkedin-job-scraper")
 
 # Define the image: standard Python, install requirements,
 # and copy ONLY the backend source code (not .git, .venv, frontend, etc.)
