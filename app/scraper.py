@@ -277,7 +277,7 @@ class PostScraper:
 
         jobs: list[LinkedInJob] = []
         for item in raw_items:
-            job = self._normalize_post_item(item, run_id)
+            job = self._normalize_post_item(item, run_id, request)
             if job is not None:
                 # Apply strict date filtering since actor cannot filter by date natively
                 if request and request.date_posted and job.posted_date:
@@ -337,7 +337,7 @@ class PostScraper:
         logger.info(f"Post Scrape metrics: total={len(validated_jobs)} unique={len(unique_jobs)}")
         return unique_jobs
 
-    def _normalize_post_item(self, item: dict[str, Any], run_id: str | None = None) -> LinkedInJob | None:
+    def _normalize_post_item(self, item: dict[str, Any], run_id: str | None = None, request: JobSearchRequest | None = None) -> LinkedInJob | None:
         if not isinstance(item, dict):
             return None
 
@@ -422,12 +422,91 @@ class PostScraper:
                     if combined_parsed.get(key):
                         parsed[key] = combined_parsed[key]
 
+        import re
+
+        # Determine location and country
+        location = None
+        country = None
+        if request:
+            location = request.location
+            country = request.country
+
+        post_text_lower = post_text.lower()
+        if not location:
+            # Look for common patterns like "based in London", "location: Berlin", "in Amsterdam", etc.
+            loc_match = re.search(r"\b(?:based in|location:?|hiring in|in)\s+([A-Z][a-zA-Z\s,]+?)(?:\.|!|,|\n|$)", post_text)
+            if loc_match:
+                location = loc_match.group(1).strip()
+        
+        # Determine workplace type
+        workplace_type = None
+        if "remote" in post_text_lower or "wfh" in post_text_lower or "work from home" in post_text_lower:
+            workplace_type = "REMOTE"
+        elif "hybrid" in post_text_lower:
+            workplace_type = "HYBRID"
+        elif "onsite" in post_text_lower or "on-site" in post_text_lower or "office" in post_text_lower or "in-office" in post_text_lower:
+            workplace_type = "ONSITE"
+        
+        if not workplace_type and request:
+            if request.remote:
+                workplace_type = "REMOTE"
+            elif request.hybrid:
+                workplace_type = "HYBRID"
+            elif request.onsite:
+                workplace_type = "ONSITE"
+
+        # Determine employment type
+        employment_type = None
+        if "full-time" in post_text_lower or "full time" in post_text_lower:
+            employment_type = "FULL_TIME"
+        elif "part-time" in post_text_lower or "part time" in post_text_lower:
+            employment_type = "PART_TIME"
+        elif "contract" in post_text_lower:
+            employment_type = "CONTRACT"
+        elif "internship" in post_text_lower or "intern" in post_text_lower:
+            employment_type = "INTERNSHIP"
+        
+        if not employment_type and request and request.employment_type:
+            employment_type = request.employment_type.upper().replace("-", "_")
+
+        # Determine experience level
+        experience_level = None
+        if "intern" in post_text_lower or "internship" in post_text_lower:
+            experience_level = "ENTRY_LEVEL"
+        elif "entry level" in post_text_lower or "entry-level" in post_text_lower or "fresher" in post_text_lower:
+            experience_level = "ENTRY_LEVEL"
+        elif "junior" in post_text_lower or "jr" in post_text_lower:
+            experience_level = "ENTRY_LEVEL"
+        elif "senior" in post_text_lower or "sr" in post_text_lower or "principal" in post_text_lower:
+            experience_level = "SENIOR"
+        elif "manager" in post_text_lower:
+            experience_level = "MANAGER"
+        elif "director" in post_text_lower:
+            experience_level = "DIRECTOR"
+        elif "lead" in post_text_lower:
+            experience_level = "MID_LEVEL"
+        
+        if not experience_level and request and request.experience_level:
+            experience_level = request.experience_level.upper().replace("-", "_")
+
+        # Fallbacks for empty fields (so they are not empty/hyphen on UI)
+        location = location or "Not specified"
+        country = country or "Not specified"
+        workplace_type = workplace_type or "Not specified"
+        employment_type = employment_type or "Not specified"
+        experience_level = experience_level or "Not specified"
+
         raw_json = dict(item)
         return LinkedInJob(
             job_title=parsed.get("job_title"),
             company_name=parsed.get("company_name"),
             linkedin_job_url=post_url,
             source_type="LINKEDIN_HIRING_POST",
+            location=location,
+            country=country,
+            workplace_type=workplace_type,
+            employment_type=employment_type,
+            experience_level=experience_level,
             post_url=post_url,
             post_text=post_text,
             post_author_name=author_name,
@@ -455,7 +534,7 @@ class PostScraper:
             application_urls=parsed.get("application_urls"),
             application_form_url=parsed.get("application_form_url"),
             application_url_type=parsed.get("application_url_type"),
-            posted_date=normalize_date(posted_date_raw),
+            posted_date=normalize_date(posted_date_raw) or datetime.now(timezone.utc),
             scraped_timestamp=datetime.now(timezone.utc),
             apify_run_id=run_id,
             raw_json=raw_json,
