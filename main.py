@@ -340,6 +340,21 @@ def run_pipeline(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         total_validated = scraper.last_run_validated_count
         duplicate_removed = scraper.last_run_duplicate_count
 
+        if settings.post_scraper_enabled:
+            try:
+                from app.scraper import PostScraper
+                from app.apify_client import ApifyClient
+                post_scraper = PostScraper(
+                    client=ApifyClient(token=config.apify_token, actor_id=settings.apify_post_actor_id)
+                )
+                posts = post_scraper.fetch_posts(request)
+                jobs.extend(posts)
+                total_fetched += post_scraper.last_run_raw_count
+                total_validated += post_scraper.last_run_validated_count
+                duplicate_removed += post_scraper.last_run_duplicate_count
+            except Exception as exc:
+                print(f"Warning: Post scraping failed, continuing with jobs: {exc}", file=sys.stderr)
+
         # Step 6: Persist jobs using JobRepository
         repository = JobRepository()
         repository.save_jobs(jobs)
