@@ -27,6 +27,7 @@ async def get_jobs(
     country: Optional[str] = None,
     sort: str = "id",
     order: str = "ASC",
+    source_type: Optional[str] = None,
 ):
     repository = JobRepository()
 
@@ -52,6 +53,7 @@ async def get_jobs(
         country=country,
         sort_by=sort,
         sort_order=order,
+        source_type=source_type,
     )
     total = repository.count_jobs(
         keyword=keyword,
@@ -60,6 +62,7 @@ async def get_jobs(
         workplace_types=workplace_types,
         experience=experience,
         country=country,
+        source_type=source_type,
     )
 
     data = {

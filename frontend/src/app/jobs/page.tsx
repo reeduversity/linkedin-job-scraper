@@ -108,7 +108,38 @@ export default function JobsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
+        {/* Source Type Tabs */}
+        <div className="flex border-b border-border gap-6">
+          <button
+            onClick={() => setParams(p => ({ ...p, page: 1, source_type: undefined }))}
+            className={cn(
+              "pb-3 text-sm font-medium border-b-2 transition-colors -mb-[2px] cursor-pointer",
+              !params.source_type ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            All Sources
+          </button>
+          <button
+            onClick={() => setParams(p => ({ ...p, page: 1, source_type: 'LINKEDIN_JOB' }))}
+            className={cn(
+              "pb-3 text-sm font-medium border-b-2 transition-colors -mb-[2px] cursor-pointer",
+              params.source_type === 'LINKEDIN_JOB' ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Official Jobs Only
+          </button>
+          <button
+            onClick={() => setParams(p => ({ ...p, page: 1, source_type: 'LINKEDIN_HIRING_POST' }))}
+            className={cn(
+              "pb-3 text-sm font-medium border-b-2 transition-colors -mb-[2px] cursor-pointer",
+              params.source_type === 'LINKEDIN_HIRING_POST' ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Direct Hiring Posts Only
+          </button>
+        </div>
+
         {/* Search & Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">

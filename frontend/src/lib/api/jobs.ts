@@ -20,6 +20,7 @@ export interface GetJobsParams {
   country?: string;
   sort?: string;
   order?: string;
+  source_type?: string;
 }
 
 export async function getJobs(

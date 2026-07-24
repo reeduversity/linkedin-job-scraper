@@ -443,6 +443,7 @@ class JobRepository:
         country: str | None = None,
         sort_by: str = "id",
         sort_order: str = "ASC",
+        source_type: str | None = None,
     ) -> list[LinkedInJob]:
         """Fetch all LinkedInJobs stored in the database with optional filters.
 
@@ -485,6 +486,9 @@ class JobRepository:
         if country:
             where_clauses.append("country ILIKE %s")
             params.append(f"%{country}%")
+        if source_type:
+            where_clauses.append("source_type = %s")
+            params.append(source_type)
 
         where_str = ""
         if where_clauses:
@@ -599,6 +603,7 @@ class JobRepository:
         workplace_types: list[str] | None = None,
         experience: str | None = None,
         country: str | None = None,
+        source_type: str | None = None,
     ) -> int:
         """Count the number of LinkedInJobs stored matching the criteria.
 
@@ -628,6 +633,9 @@ class JobRepository:
         if country:
             where_clauses.append("country ILIKE %s")
             params.append(f"%{country}%")
+        if source_type:
+            where_clauses.append("source_type = %s")
+            params.append(source_type)
 
         where_str = ""
         if where_clauses:
