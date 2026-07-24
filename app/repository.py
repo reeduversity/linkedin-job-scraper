@@ -468,8 +468,8 @@ class JobRepository:
         params = []
 
         if keyword:
-            where_clauses.append("(job_title ILIKE %s OR description ILIKE %s)")
-            params.extend([f"%{keyword}%", f"%{keyword}%"])
+            where_clauses.append("(job_title ILIKE %s OR description ILIKE %s OR post_text ILIKE %s OR post_author_name ILIKE %s)")
+            params.extend([f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"])
         if company:
             where_clauses.append("company_name ILIKE %s")
             params.append(f"%{company}%")
@@ -611,8 +611,8 @@ class JobRepository:
         params = []
 
         if keyword:
-            where_clauses.append("(job_title ILIKE %s OR description ILIKE %s)")
-            params.extend([f"%{keyword}%", f"%{keyword}%"])
+            where_clauses.append("(job_title ILIKE %s OR description ILIKE %s OR post_text ILIKE %s OR post_author_name ILIKE %s)")
+            params.extend([f"%{keyword}%", f"%{keyword}%", f"%{keyword}%", f"%{keyword}%"])
         if company:
             where_clauses.append("company_name ILIKE %s")
             params.append(f"%{company}%")
