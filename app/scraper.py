@@ -254,15 +254,12 @@ class PostScraper:
         self.last_run_duplicate_count = 0
         self.last_run_unique_count = 0
 
-        # Build generic search query from request.
-        # For posts, keep the query broad to catch more results, filtering happens after fetching.
         query_parts = []
         if request:
             if request.keyword: query_parts.append(request.keyword)
             if request.company: query_parts.append(request.company)
-            # We explicitly do NOT append location, remote, hybrid, etc. to the query string 
-            # because human-written posts might not contain these exact words, 
-            # and it will cause LinkedIn to return 0 results.
+            if request.location: query_parts.append(request.location)
+            if request.country: query_parts.append(request.country)
             
         # Always append a hiring keyword to narrow down LinkedIn posts to actual job opportunities
         query_parts.append("hiring")

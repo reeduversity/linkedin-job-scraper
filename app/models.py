@@ -65,17 +65,29 @@ class JobSearchRequest(BaseModel):
         }
         mapped_date = date_map.get(self.date_posted) if self.date_posted else None
 
-        # Apify expects employmentType to be an array of strings
-        emp_types = [self.employment_type] if self.employment_type else None
+        # Map employment_type to contractType array for Apify actor
+        contract_map = {
+            "Full-time": "F",
+            "Part-time": "P",
+            "Contract": "C",
+            "Internship": "I",
+            "Temporary": "T",
+            "Volunteer": "V",
+        }
+        contract_types = []
+        if self.employment_type:
+            mapped = contract_map.get(self.employment_type) or contract_map.get(self.employment_type.capitalize())
+            if mapped:
+                contract_types.append(mapped)
 
         payload = {
-            "searchKeywords": self.keyword,
+            "title": self.keyword,
             "location": combined_location or None,
             "remote": workplace_types or None,  # actor schema: array
-            "employmentType": emp_types,
+            "contractType": contract_types or None,
             "experienceLevel": exp_levels or None,
             "datePosted": mapped_date,
-            "company": self.company,
+            "companyName": [self.company] if self.company else None,
             "maxResults": self.max_results,
         }
         return {key: value for key, value in payload.items() if value is not None}
