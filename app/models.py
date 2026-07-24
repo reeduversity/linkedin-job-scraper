@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional, List
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -96,64 +96,64 @@ class JobSearchRequest(BaseModel):
 class LinkedInJob(BaseModel):
     """Normalized LinkedIn job payload returned by the collection layer."""
 
-    job_title: str | None = None
-    company_name: str | None = None
-    company_url: str | None = None
+    job_title: Optional[str] = None
+    company_name: Optional[str] = None
+    company_url: Optional[str] = None
     linkedin_job_url: str = Field(...)
-    job_id: str | None = None
+    job_id: Optional[str] = None
     
     # HIRING_POST specific fields
     source_type: str = "LINKEDIN_JOB"
-    post_url: str | None = None
-    post_text: str | None = None
-    post_author_name: str | None = None
-    post_author_profile_url: str | None = None
-    post_author_role: str | None = None
-    poster_designation: str | None = None
-    poster_role_category: str | None = None
-    application_method: str | None = None
-    application_methods: list[str] | None = None
-    application_email: str | None = None
-    application_emails: list[str] | None = None
-    application_platform: str | None = None
-    application_urls: list[str] | None = None
-    application_form_url: str | None = None
-    application_url_type: str | None = None
+    post_url: Optional[str] = None
+    post_text: Optional[str] = None
+    post_author_name: Optional[str] = None
+    post_author_profile_url: Optional[str] = None
+    post_author_role: Optional[str] = None
+    poster_designation: Optional[str] = None
+    poster_role_category: Optional[str] = None
+    application_method: Optional[str] = None
+    application_methods: Optional[List[str]] = None
+    application_email: Optional[str] = None
+    application_emails: Optional[List[str]] = None
+    application_platform: Optional[str] = None
+    application_urls: Optional[List[str]] = None
+    application_form_url: Optional[str] = None
+    application_url_type: Optional[str] = None
     # Hiring detection
-    hiring_confidence_score: float | None = None
-    detection_method: str | None = None
-    extraction_method: str | None = None
-    extraction_quality: str | None = None
+    hiring_confidence_score: Optional[float] = None
+    detection_method: Optional[str] = None
+    extraction_method: Optional[str] = None
+    extraction_quality: Optional[str] = None
     # OCR fields
-    image_url: str | None = None
-    image_urls: list[str] | None = None
-    ocr_text: str | None = None
-    ocr_confidence: float | None = None
-    ocr_processed: bool | None = None
-    ocr_extraction_status: str | None = None
+    image_url: Optional[str] = None
+    image_urls: Optional[List[str]] = None
+    ocr_text: Optional[str] = None
+    ocr_confidence: Optional[float] = None
+    ocr_processed: Optional[bool] = None
+    ocr_extraction_status: Optional[str] = None
     # Hashtags
-    hashtags: list[str] | None = None
-    location: str | None = None
-    country: str | None = None
-    workplace_type: str | None = None
-    employment_type: str | None = None
-    experience_level: str | None = None
-    salary: str | None = None
-    currency: str | None = None
-    description: str | None = None
-    job_summary: str | None = None
-    skills: list[str] | None = None
-    industry: str | None = None
-    benefits: str | None = None
-    recruiter: str | None = None
-    recruiter_url: str | None = None
-    company_logo: str | None = None
-    company_size: str | None = None
-    application_url: str | None = None
-    easy_apply: bool | None = None
-    posted_date: datetime | None = None
-    scraped_timestamp: datetime | None = None
-    apify_run_id: str | None = None
+    hashtags: Optional[List[str]] = None
+    location: Optional[str] = None
+    country: Optional[str] = None
+    workplace_type: Optional[str] = None
+    employment_type: Optional[str] = None
+    experience_level: Optional[str] = None
+    salary: Optional[str] = None
+    currency: Optional[str] = None
+    description: Optional[str] = None
+    job_summary: Optional[str] = None
+    skills: Optional[List[str]] = None
+    industry: Optional[str] = None
+    benefits: Optional[str] = None
+    recruiter: Optional[str] = None
+    recruiter_url: Optional[str] = None
+    company_logo: Optional[str] = None
+    company_size: Optional[str] = None
+    application_url: Optional[str] = None
+    easy_apply: Optional[bool] = None
+    posted_date: Optional[datetime] = None
+    scraped_timestamp: Optional[datetime] = None
+    apify_run_id: Optional[str] = None
     raw_json: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("job_title", "company_name", "location", "country", "workplace_type", "employment_type", "experience_level", "salary", "currency", "description", "job_summary", "industry", "benefits", "recruiter", "recruiter_url", "company_logo", "company_size", "application_url", "apify_run_id", "source_type", "post_text", "post_author_name", "post_author_role", "poster_designation", "poster_role_category", "application_method", "application_email", "application_platform", "application_form_url", "application_url_type", "detection_method", "extraction_method", "extraction_quality", "image_url", "ocr_text", "ocr_extraction_status", mode="before")
