@@ -53,10 +53,30 @@ class ExportService:
                 "scraped_timestamp": job.scraped_timestamp.isoformat() if job.scraped_timestamp else "",
                 "source_type": job.source_type or "",
                 "post_url": job.post_url or "",
+                "post_text": job.post_text or "",
                 "post_author_name": job.post_author_name or "",
+                "post_author_profile_url": job.post_author_profile_url or "",
+                "post_author_role": job.post_author_role or "",
+                "poster_designation": job.poster_designation or "",
+                "poster_role_category": job.poster_role_category or "",
+                "hiring_confidence_score": job.hiring_confidence_score,
+                "detection_method": job.detection_method or "",
+                "extraction_method": job.extraction_method or "",
+                "extraction_quality": job.extraction_quality or "",
+                "image_url": job.image_url or "",
+                "ocr_text": job.ocr_text or "",
+                "ocr_confidence": job.ocr_confidence,
+                "ocr_processed": job.ocr_processed,
+                "ocr_extraction_status": job.ocr_extraction_status or "",
+                "hashtags": ", ".join(job.hashtags) if job.hashtags else "",
                 "application_method": job.application_method or "",
+                "application_methods": ", ".join(job.application_methods) if job.application_methods else "",
                 "application_email": job.application_email or "",
+                "application_emails": ", ".join(job.application_emails) if job.application_emails else "",
                 "application_platform": job.application_platform or "",
+                "application_urls": ", ".join(job.application_urls) if job.application_urls else "",
+                "application_form_url": job.application_form_url or "",
+                "application_url_type": job.application_url_type or "",
             })
         return rows
 
@@ -73,8 +93,13 @@ class ExportService:
             "salary", "currency", "description", "job_summary", "skills", "industry",
             "benefits", "recruiter", "recruiter_url", "company_logo", "company_size",
             "application_url", "easy_apply", "posted_date", "scraped_timestamp",
-            "source_type", "post_url", "post_author_name", "application_method",
-            "application_email", "application_platform"
+            "source_type", "post_url", "post_text", "post_author_name", "post_author_profile_url",
+            "post_author_role", "poster_designation", "poster_role_category",
+            "hiring_confidence_score", "detection_method", "extraction_method", "extraction_quality",
+            "image_url", "ocr_text", "ocr_confidence", "ocr_processed", "ocr_extraction_status",
+            "hashtags", "application_method", "application_methods", "application_email",
+            "application_emails", "application_platform", "application_urls",
+            "application_form_url", "application_url_type"
         ]
 
         try:
@@ -99,8 +124,13 @@ class ExportService:
             "salary", "currency", "description", "job_summary", "skills", "industry",
             "benefits", "recruiter", "recruiter_url", "company_logo", "company_size",
             "application_url", "easy_apply", "posted_date", "scraped_timestamp",
-            "source_type", "post_url", "post_author_name", "application_method",
-            "application_email", "application_platform"
+            "source_type", "post_url", "post_text", "post_author_name", "post_author_profile_url",
+            "post_author_role", "poster_designation", "poster_role_category",
+            "hiring_confidence_score", "detection_method", "extraction_method", "extraction_quality",
+            "image_url", "ocr_text", "ocr_confidence", "ocr_processed", "ocr_extraction_status",
+            "hashtags", "application_method", "application_methods", "application_email",
+            "application_emails", "application_platform", "application_urls",
+            "application_form_url", "application_url_type"
         ]
 
         wb = openpyxl.Workbook()

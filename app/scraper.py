@@ -19,6 +19,7 @@ from app.duplicate_detector import remove_duplicates
 from app.config import settings
 from app.models import JobSearchRequest, LinkedInJob
 from app.post_parser import parse_post
+from app.ocr_processor import process_image_url
 from app.utils import is_valid_url, normalize_date, normalize_optional_string, normalize_salary
 from app.validation import validate_jobs
 
@@ -364,22 +365,96 @@ class PostScraper:
         posted_at_data = item.get("posted_at", {})
         posted_date_raw = posted_at_data.get("timestamp") or item.get("timestamp") or posted_at_data.get("date")
 
+        # Extract image URL from item data (if available from actor)
+        image_url = None
+        image_urls_list = []
+        # The datadoping/linkedin-posts-search-scraper may return images in various fields
+        item_images = item.get("images") or item.get("image") or []
+        if isinstance(item_images, list) and item_images:
+            for img in item_images:
+                if isinstance(img, dict):
+                    url = img.get("url") or img.get("src") or img.get("fullUrl")
+                elif isinstance(img, str):
+                    url = img
+                else:
+                    continue
+                if url and is_valid_url(url):
+                    image_urls_list.append(url)
+            if image_urls_list:
+                image_url = image_urls_list[0]
+        elif isinstance(item_images, str) and is_valid_url(item_images):
+            image_url = item_images
+            image_urls_list = [item_images]
+
+        # Run OCR on the first image URL if available
+        ocr_result = {}
+        if image_url:
+            try:
+                ocr_result = process_image_url(image_url)
+            except Exception as e:
+                logger.warning(f"OCR processing failed for {image_url[:80]}: {e}")
+                ocr_result = {
+                    "ocr_text": None,
+                    "ocr_confidence": None,
+                    "ocr_processed": True,
+                    "ocr_extraction_status": "FAILED",
+                }
+        else:
+            ocr_result = {
+                "ocr_text": None,
+                "ocr_confidence": None,
+                "ocr_processed": False,
+                "ocr_extraction_status": "NO_IMAGE",
+            }
+
+        # Combine OCR text with original post text for NLP processing if OCR succeeded
+        combined_text = post_text
+        if ocr_result.get("ocr_text"):
+            combined_text = post_text + "\n\n[OCR extracted from image]:\n" + ocr_result["ocr_text"]
+            # Re-parse with combined text for better extraction
+            combined_parsed = parse_post(combined_text)
+            if combined_parsed.get("is_hiring_post"):
+                # Merge additional info from combined parse
+                for key in ["job_title", "company_name", "application_method", "application_methods", 
+                            "application_email", "application_emails", "application_url", "application_urls",
+                            "application_platform", "application_form_url", "application_url_type",
+                            "hashtags", "poster_role_category", "extraction_quality"]:
+                    if combined_parsed.get(key):
+                        parsed[key] = combined_parsed[key]
+
         raw_json = dict(item)
         return LinkedInJob(
             job_title=parsed.get("job_title"),
-            company_name=parsed.get("company_name"),  # Do NOT assume author name is company name
-            linkedin_job_url=post_url, # Use post URL as unique identifier in DB
+            company_name=parsed.get("company_name"),
+            linkedin_job_url=post_url,
             source_type="LINKEDIN_HIRING_POST",
             post_url=post_url,
             post_text=post_text,
             post_author_name=author_name,
             post_author_profile_url=author_profile_url,
             post_author_role=author_role,
+            poster_designation=author_role,  # Use author headline as designation
+            poster_role_category=parsed.get("poster_role_category"),
+            hiring_confidence_score=parsed.get("hiring_confidence_score"),
+            detection_method=parsed.get("detection_method"),
+            extraction_method=parsed.get("extraction_method"),
+            extraction_quality=parsed.get("extraction_quality"),
+            image_url=image_url,
+            image_urls=image_urls_list if image_urls_list else None,
+            ocr_text=ocr_result.get("ocr_text"),
+            ocr_confidence=ocr_result.get("ocr_confidence"),
+            ocr_processed=ocr_result.get("ocr_processed", False),
+            ocr_extraction_status=ocr_result.get("ocr_extraction_status"),
+            hashtags=parsed.get("hashtags"),
             application_method=parsed.get("application_method"),
             application_methods=parsed.get("application_methods"),
             application_email=parsed.get("application_email"),
+            application_emails=parsed.get("application_emails"),
             application_platform=parsed.get("application_platform"),
             application_url=parsed.get("application_url"),
+            application_urls=parsed.get("application_urls"),
+            application_form_url=parsed.get("application_form_url"),
+            application_url_type=parsed.get("application_url_type"),
             posted_date=normalize_date(posted_date_raw),
             scraped_timestamp=datetime.now(timezone.utc),
             apify_run_id=run_id,

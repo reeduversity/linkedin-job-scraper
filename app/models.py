@@ -97,10 +97,30 @@ class LinkedInJob(BaseModel):
     post_author_name: str | None = None
     post_author_profile_url: str | None = None
     post_author_role: str | None = None
+    poster_designation: str | None = None
+    poster_role_category: str | None = None
     application_method: str | None = None
     application_methods: list[str] | None = None
     application_email: str | None = None
+    application_emails: list[str] | None = None
     application_platform: str | None = None
+    application_urls: list[str] | None = None
+    application_form_url: str | None = None
+    application_url_type: str | None = None
+    # Hiring detection
+    hiring_confidence_score: float | None = None
+    detection_method: str | None = None
+    extraction_method: str | None = None
+    extraction_quality: str | None = None
+    # OCR fields
+    image_url: str | None = None
+    image_urls: list[str] | None = None
+    ocr_text: str | None = None
+    ocr_confidence: float | None = None
+    ocr_processed: bool | None = None
+    ocr_extraction_status: str | None = None
+    # Hashtags
+    hashtags: list[str] | None = None
     location: str | None = None
     country: str | None = None
     workplace_type: str | None = None
@@ -124,7 +144,7 @@ class LinkedInJob(BaseModel):
     apify_run_id: str | None = None
     raw_json: dict[str, Any] = Field(default_factory=dict)
 
-    @field_validator("job_title", "company_name", "location", "country", "workplace_type", "employment_type", "experience_level", "salary", "currency", "description", "job_summary", "industry", "benefits", "recruiter", "recruiter_url", "company_logo", "company_size", "application_url", "apify_run_id", "source_type", "post_text", "post_author_name", "post_author_role", "application_method", "application_email", "application_platform", mode="before")
+    @field_validator("job_title", "company_name", "location", "country", "workplace_type", "employment_type", "experience_level", "salary", "currency", "description", "job_summary", "industry", "benefits", "recruiter", "recruiter_url", "company_logo", "company_size", "application_url", "apify_run_id", "source_type", "post_text", "post_author_name", "post_author_role", "poster_designation", "poster_role_category", "application_method", "application_email", "application_platform", "application_form_url", "application_url_type", "detection_method", "extraction_method", "extraction_quality", "image_url", "ocr_text", "ocr_extraction_status", mode="before")
     @classmethod
     def normalize_optional_string(cls, value: Any) -> str | None:
         if value is None:
@@ -134,7 +154,7 @@ class LinkedInJob(BaseModel):
             return cleaned or None
         return str(value)
 
-    @field_validator("linkedin_job_url", "company_url", "application_url", "recruiter_url", "post_url", "post_author_profile_url", mode="before")
+    @field_validator("linkedin_job_url", "company_url", "application_url", "recruiter_url", "post_url", "post_author_profile_url", "application_form_url", mode="before")
     @classmethod
     def validate_url(cls, value: Any) -> str | None:
         if value is None:
@@ -146,7 +166,7 @@ class LinkedInJob(BaseModel):
             return cleaned
         return str(value)
 
-    @field_validator("skills", "application_methods", mode="before")
+    @field_validator("skills", "application_methods", "application_emails", "application_urls", "image_urls", "hashtags", mode="before")
     @classmethod
     def normalize_skills(cls, value: Any) -> list[str] | None:
         if value is None:

@@ -1,27 +1,34 @@
-# TODO - professional cleanup + push-ready changes
+# Implementation Todo
 
-## Step 1: Analyze & confirm constraints
-- [x] Read key files: README, app/scraper.py, app/scheduler.py, app/repository.py
-- [ ] Confirm scope for changes (A/B): structure+cleanup only OR minor logging changes ok
+## Phase 1: Config
+- [ ] Update `app/config.py` default `apify_post_actor_id` from `curious_coder/linkedin-post-scraper` to `datadoping/linkedin-posts-search-scraper`
 
-## Step 2: Identify git-ignored artifacts
-- [ ] Verify .gitignore ignores logs/, data/csv/, data/excel/ (no demo/test commits)
+## Phase 2: Database Schema
+- [ ] Update `sql/create_tables.sql` with all new HIRING_POST columns
+- [ ] Update `app/database.py` with migration ALTER TABLE statements
 
-## Step 3: Professional logging cleanup
-- [ ] Replace/align `print()` in app/scraper.py with logger (as allowed)
-- [ ] Remove module import-time side effects in app/scheduler.py (logs dir + file handler setup) by moving to lazy/central initializer
+## Phase 3: OCR Module
+- [ ] Create `app/ocr_processor.py` - real OCR module using pytesseract/PIL
 
-## Step 4: Standardize imports & formatting
-- [ ] Remove unused imports, add missing module-level docstrings if needed
+## Phase 4: Backend Core
+- [ ] Update `app/post_parser.py` - numeric confidence 0.0-1.0, hashtag extraction, role category
+- [ ] Update `app/scraper.py` - pass through all new fields from parser + OCR
+- [ ] Update `app/validation.py` - pass through all new HIRING_POST fields
+- [x] Update `app/repository.py` - SELECT/INSERT/UPDATE all new columns
 
-## Step 5: Make minimal, safe changes only
-- [ ] Ensure no tests/demo/smoke/qa/verify files are modified
+## Phase 5: API & Exports
+- [ ] Update `app/exporter.py` - add all new fields to CSV/Excel/JSON exports
 
-## Step 6: Verify
-- [ ] Run python -m compileall
-- [ ] Run unit tests (if available) without committing test file changes
+## Phase 6: Frontend
+- [ ] Update `frontend/src/lib/types/api.ts` - add all new fields
+- [ ] Update `frontend/src/app/jobs/page.tsx` - source type filter tabs, new columns, badges
+- [ ] Update `frontend/src/components/jobs/job-details-dialog.tsx` - all new info sections
 
-## Step 7: Git ready
-- [ ] `git status` and ensure only intended files changed
-- [ ] Prepare commit message(s)
+## Phase 7: Tests
+- [ ] Update `tests/test_post_parser.py` - test numeric confidence, hashtags
+- [ ] Update `tests/test_stage11.py` - test new export fields
+- [ ] Add OCR tests
+
+## Done
+- N/A
 

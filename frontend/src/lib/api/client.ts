@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import type { StandardResponse, ErrorResponse } from '../types/api';
 
-const API_BASE_URL = 'https://campusdice-lab--linkedin-job-scraper-fastapi-app.modal.run';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

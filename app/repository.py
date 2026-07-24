@@ -61,10 +61,10 @@ class JobRepository:
                             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
                             "company_size, application_url, easy_apply, posted_date, scraped_timestamp, "
                             "apify_run_id, source_type, post_url, post_text, post_author_name, post_author_profile_url, "
-                            "post_author_role, application_method, application_methods, application_email, application_platform, raw_json"
+                            "post_author_role, application_method, application_methods, application_email, application_platform, poster_designation, poster_role_category, hiring_confidence_score, detection_method, extraction_method, extraction_quality, image_url, image_urls, ocr_text, ocr_confidence, ocr_processed, ocr_extraction_status, hashtags, application_emails, application_urls, application_form_url, application_url_type, raw_json"
                             ") VALUES ("
                             "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                            "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+                            "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
                             ")",
                             (
                                 job.job_title,
@@ -103,6 +103,23 @@ class JobRepository:
                                 Json(job.application_methods) if job.application_methods is not None else None,
                                 job.application_email,
                                 job.application_platform,
+                                job.poster_designation,
+                                job.poster_role_category,
+                                job.hiring_confidence_score,
+                                job.detection_method,
+                                job.extraction_method,
+                                job.extraction_quality,
+                                job.image_url,
+                                Json(job.image_urls) if job.image_urls is not None else None,
+                                job.ocr_text,
+                                job.ocr_confidence,
+                                job.ocr_processed,
+                                job.ocr_extraction_status,
+                                Json(job.hashtags) if job.hashtags is not None else None,
+                                Json(job.application_emails) if job.application_emails is not None else None,
+                                Json(job.application_urls) if job.application_urls is not None else None,
+                                job.application_form_url,
+                                job.application_url_type,
                                 Json(job.raw_json),
                             ),
                         )
@@ -119,6 +136,10 @@ class JobRepository:
                             "posted_date = %s, scraped_timestamp = %s, apify_run_id = %s, source_type = %s, post_url = %s, "
                             "post_text = %s, post_author_name = %s, post_author_profile_url = %s, post_author_role = %s, "
                             "application_method = %s, application_methods = %s, application_email = %s, application_platform = %s, "
+                            "poster_designation = %s, poster_role_category = %s, hiring_confidence_score = %s, detection_method = %s, "
+                            "extraction_method = %s, extraction_quality = %s, image_url = %s, image_urls = %s, ocr_text = %s, "
+                            "ocr_confidence = %s, ocr_processed = %s, ocr_extraction_status = %s, hashtags = %s, "
+                            "application_emails = %s, application_urls = %s, application_form_url = %s, application_url_type = %s, "
                             "raw_json = %s, updated_at = now() "
                             "WHERE linkedin_job_url = %s",
                             (
@@ -157,6 +178,23 @@ class JobRepository:
                                 Json(job.application_methods) if job.application_methods is not None else None,
                                 job.application_email,
                                 job.application_platform,
+                                job.poster_designation,
+                                job.poster_role_category,
+                                job.hiring_confidence_score,
+                                job.detection_method,
+                                job.extraction_method,
+                                job.extraction_quality,
+                                job.image_url,
+                                Json(job.image_urls) if job.image_urls is not None else None,
+                                job.ocr_text,
+                                job.ocr_confidence,
+                                job.ocr_processed,
+                                job.ocr_extraction_status,
+                                Json(job.hashtags) if job.hashtags is not None else None,
+                                Json(job.application_emails) if job.application_emails is not None else None,
+                                Json(job.application_urls) if job.application_urls is not None else None,
+                                job.application_form_url,
+                                job.application_url_type,
                                 Json(job.raw_json),
                                 linkedin_job_url,
                             ),
@@ -224,10 +262,10 @@ class JobRepository:
                                 "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
                                 "company_size, application_url, easy_apply, posted_date, scraped_timestamp, "
                                 "apify_run_id, source_type, post_url, post_text, post_author_name, post_author_profile_url, "
-                                "post_author_role, application_method, application_methods, application_email, application_platform, raw_json"
+                                "post_author_role, application_method, application_methods, application_email, application_platform, poster_designation, poster_role_category, hiring_confidence_score, detection_method, extraction_method, extraction_quality, image_url, image_urls, ocr_text, ocr_confidence, ocr_processed, ocr_extraction_status, hashtags, application_emails, application_urls, application_form_url, application_url_type, raw_json"
                                 ") VALUES ("
-                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
                                 ")",
                                 (
                                     job.job_title,
@@ -266,6 +304,23 @@ class JobRepository:
                                     Json(job.application_methods) if job.application_methods is not None else None,
                                     job.application_email,
                                     job.application_platform,
+                                    job.poster_designation,
+                                    job.poster_role_category,
+                                    job.hiring_confidence_score,
+                                    job.detection_method,
+                                    job.extraction_method,
+                                    job.extraction_quality,
+                                    job.image_url,
+                                    Json(job.image_urls) if job.image_urls is not None else None,
+                                    job.ocr_text,
+                                    job.ocr_confidence,
+                                    job.ocr_processed,
+                                    job.ocr_extraction_status,
+                                    Json(job.hashtags) if job.hashtags is not None else None,
+                                    Json(job.application_emails) if job.application_emails is not None else None,
+                                    Json(job.application_urls) if job.application_urls is not None else None,
+                                    job.application_form_url,
+                                    job.application_url_type,
                                     Json(job.raw_json),
                                 ),
                             )
@@ -280,6 +335,10 @@ class JobRepository:
                                 "posted_date = %s, scraped_timestamp = %s, apify_run_id = %s, source_type = %s, post_url = %s, "
                                 "post_text = %s, post_author_name = %s, post_author_profile_url = %s, post_author_role = %s, "
                                 "application_method = %s, application_methods = %s, application_email = %s, application_platform = %s, "
+                                "poster_designation = %s, poster_role_category = %s, hiring_confidence_score = %s, detection_method = %s, "
+                                "extraction_method = %s, extraction_quality = %s, image_url = %s, image_urls = %s, ocr_text = %s, "
+                                "ocr_confidence = %s, ocr_processed = %s, ocr_extraction_status = %s, hashtags = %s, "
+                                "application_emails = %s, application_urls = %s, application_form_url = %s, application_url_type = %s, "
                                 "raw_json = %s, updated_at = now() "
                                 "WHERE linkedin_job_url = %s",
                                 (
@@ -318,6 +377,23 @@ class JobRepository:
                                     Json(job.application_methods) if job.application_methods is not None else None,
                                     job.application_email,
                                     job.application_platform,
+                                    job.poster_designation,
+                                    job.poster_role_category,
+                                    job.hiring_confidence_score,
+                                    job.detection_method,
+                                    job.extraction_method,
+                                    job.extraction_quality,
+                                    job.image_url,
+                                    Json(job.image_urls) if job.image_urls is not None else None,
+                                    job.ocr_text,
+                                    job.ocr_confidence,
+                                    job.ocr_processed,
+                                    job.ocr_extraction_status,
+                                    Json(job.hashtags) if job.hashtags is not None else None,
+                                    Json(job.application_emails) if job.application_emails is not None else None,
+                                    Json(job.application_urls) if job.application_urls is not None else None,
+                                    job.application_form_url,
+                                    job.application_url_type,
                                     Json(job.raw_json),
                                     linkedin_job_url,
                                 ),
@@ -435,7 +511,11 @@ class JobRepository:
             "workplace_type, employment_type, experience_level, salary, currency, description, "
             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
             "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json, "
-            "source_type, post_url, post_author_name, application_method, application_email, application_platform "
+            "source_type, post_url, post_author_name, application_method, application_email, application_platform, "
+            "post_author_profile_url, post_author_role, poster_designation, poster_role_category, "
+            "hiring_confidence_score, detection_method, extraction_method, extraction_quality, "
+            "image_url, image_urls, ocr_text, ocr_confidence, ocr_processed, ocr_extraction_status, "
+            "hashtags, application_emails, application_urls, application_form_url, application_url_type "
             f"FROM jobs{where_str} ORDER BY {sort_by} {sort_order}"
         )
 
@@ -486,6 +566,25 @@ class JobRepository:
                                 application_method=row[29],
                                 application_email=row[30],
                                 application_platform=row[31],
+                                post_author_profile_url=row[32],
+                                post_author_role=row[33],
+                                poster_designation=row[34],
+                                poster_role_category=row[35],
+                                hiring_confidence_score=row[36],
+                                detection_method=row[37],
+                                extraction_method=row[38],
+                                extraction_quality=row[39],
+                                image_url=row[40],
+                                image_urls=row[41],
+                                ocr_text=row[42],
+                                ocr_confidence=row[43],
+                                ocr_processed=row[44],
+                                ocr_extraction_status=row[45],
+                                hashtags=row[46],
+                                application_emails=row[47],
+                                application_urls=row[48],
+                                application_form_url=row[49],
+                                application_url_type=row[50],
                             )
                         )
             return jobs
@@ -637,7 +736,11 @@ class JobRepository:
             "workplace_type, employment_type, experience_level, salary, currency, description, "
             "job_summary, skills, industry, benefits, recruiter, recruiter_url, company_logo, "
             "company_size, application_url, easy_apply, posted_date, scraped_timestamp, raw_json, "
-            "source_type, post_url, post_author_name, application_method, application_email, application_platform "
+            "source_type, post_url, post_author_name, application_method, application_email, application_platform, "
+            "post_author_profile_url, post_author_role, poster_designation, poster_role_category, "
+            "hiring_confidence_score, detection_method, extraction_method, extraction_quality, "
+            "image_url, image_urls, ocr_text, ocr_confidence, ocr_processed, ocr_extraction_status, "
+            "hashtags, application_emails, application_urls, application_form_url, application_url_type "
             "FROM jobs WHERE job_id = %s"
         )
         try:
@@ -680,6 +783,25 @@ class JobRepository:
                         application_method=row[29],
                         application_email=row[30],
                         application_platform=row[31],
+                        post_author_profile_url=row[32],
+                        post_author_role=row[33],
+                        poster_designation=row[34],
+                        poster_role_category=row[35],
+                        hiring_confidence_score=row[36],
+                        detection_method=row[37],
+                        extraction_method=row[38],
+                        extraction_quality=row[39],
+                        image_url=row[40],
+                        image_urls=row[41],
+                        ocr_text=row[42],
+                        ocr_confidence=row[43],
+                        ocr_processed=row[44],
+                        ocr_extraction_status=row[45],
+                        hashtags=row[46],
+                        application_emails=row[47],
+                        application_urls=row[48],
+                        application_form_url=row[49],
+                        application_url_type=row[50],
                     )
         except Exception as exc:
             raise self._handle_failure(exc)

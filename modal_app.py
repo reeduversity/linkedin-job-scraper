@@ -7,6 +7,7 @@ app = modal.App("linkedin-job-scraper")
 # and copy ONLY the backend source code (not .git, .venv, frontend, etc.)
 image = (
     modal.Image.debian_slim(python_version="3.11")
+    .apt_install("tesseract-ocr")
     .pip_install_from_requirements("requirements.txt")
     .add_local_dir("app", remote_path="/root/linkedin-job-scraper/app")
     .add_local_file("main.py", remote_path="/root/linkedin-job-scraper/main.py")
